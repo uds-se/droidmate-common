@@ -70,7 +70,6 @@ fun <T, TItem> Iterable<T>.uniqueItemsWithFirstOccurrenceIndex(
         val uniqueStringsToNewItemsWithIndexes = uniqueStringsToItemsWithIndexes.filterKeys { it in newUniqueStrings }
 
         accumulatedMap.plus(uniqueStringsToNewItemsWithIndexes)
-
     }.map { it.value }.toMap()
 }
 
