@@ -39,5 +39,4 @@ import org.droidmate.deviceInterface.communication.TimeFormattedLogMessageI
  */
 interface IApiLogcatMessage : TimeFormattedLogMessageI, IApi
 
-val MissingDeviceLogs : MutableList<IApiLogcatMessage> = mutableListOf()
-
+val MissingDeviceLogs: MutableList<IApiLogcatMessage> = mutableListOf()

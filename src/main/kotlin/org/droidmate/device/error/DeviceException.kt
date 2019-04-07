@@ -28,31 +28,33 @@ package org.droidmate.device.error
 import org.droidmate.misc.DroidmateException
 
 open class DeviceException : DroidmateException {
-	companion object {
-		private const val serialVersionUID: Long = 1
-	}
+    companion object {
+        private const val serialVersionUID: Long = 1
+    }
 
-	val stopFurtherApkExplorations: Boolean
+    val stopFurtherApkExplorations: Boolean
 
-	constructor() : super() {
-		stopFurtherApkExplorations = false
-	}
+    constructor() : super() {
+        stopFurtherApkExplorations = false
+    }
 
-	constructor(cause: Throwable) : super(cause) {
-		stopFurtherApkExplorations = false
-	}
+    constructor(cause: Throwable) : super(cause) {
+        stopFurtherApkExplorations = false
+    }
 
-	constructor(message: String) : super(message) {
-		stopFurtherApkExplorations = false
-	}
+    constructor(message: String) : super(message) {
+        stopFurtherApkExplorations = false
+    }
 
-	constructor(message: String, stopFurtherApkExplorations: Boolean) : super(message) {
-		this.stopFurtherApkExplorations = stopFurtherApkExplorations
-	}
+    constructor(message: String, stopFurtherApkExplorations: Boolean) : super(message) {
+        this.stopFurtherApkExplorations = stopFurtherApkExplorations
+    }
 
-	@JvmOverloads
-	constructor(message: String, cause: Throwable, stopFurtherApkExplorations: Boolean = false) : super(message, cause) {
-		this.stopFurtherApkExplorations = stopFurtherApkExplorations
-	}
-
+    @JvmOverloads
+    constructor(message: String, cause: Throwable, stopFurtherApkExplorations: Boolean = false) : super(
+        message,
+        cause
+    ) {
+        this.stopFurtherApkExplorations = stopFurtherApkExplorations
+    }
 }

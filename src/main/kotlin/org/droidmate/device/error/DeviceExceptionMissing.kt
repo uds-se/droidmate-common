@@ -26,12 +26,12 @@
 package org.droidmate.device.error
 
 class DeviceExceptionMissing : DeviceException(defaultExceptionMessage) {
-	companion object {
-		private const val serialVersionUID: Long = 1
-		private const val defaultExceptionMessage = ""
-	}
+    companion object {
+        private const val serialVersionUID: Long = 1
+        private const val defaultExceptionMessage = ""
+    }
 
-	override fun toString(): String {
-		return defaultExceptionMessage
-	}
+    override fun toString(): String {
+        return defaultExceptionMessage
+    }
 }

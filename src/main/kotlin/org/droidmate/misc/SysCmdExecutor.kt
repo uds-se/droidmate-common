@@ -26,12 +26,14 @@
 package org.droidmate.misc
 
 import com.google.common.base.Stopwatch
-import org.apache.commons.exec.*
-import org.droidmate.logging.Markers
+import org.apache.commons.exec.CommandLine
+import org.apache.commons.exec.DefaultExecutor
+import org.apache.commons.exec.ExecuteException
+import org.apache.commons.exec.ExecuteWatchdog
+import org.apache.commons.exec.PumpStreamHandler
 import org.droidmate.misc.ISysCmdExecutor.Companion.getExecutionTimeMsg
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.IOException
 
 /**
@@ -41,87 +43,98 @@ import java.io.IOException
  * http://blog.sanaulla.info/2010/09/07/execute-external-process-from-within-jvm-using-apache-commons-exec-library/
  */
 class SysCmdExecutor : ISysCmdExecutor {
-	companion object {
-		private val log by lazy { LoggerFactory.getLogger(SysCmdExecutor::class.java) }
-	}
+    companion object {
+        private val log by lazy { LoggerFactory.getLogger(SysCmdExecutor::class.java) }
+    }
 
-	/** Timeout for executing system commands, in milliseconds. Zero or negative value means no timeout. */
-	// App that often requires more than one minute for "adb start": net.zedge.android_v4.10.2-inlined.apk
-	private val sysCmdExecuteTimeout = 1000 * 60 * 2
+    /** Timeout for executing system commands, in milliseconds. Zero or negative value means no timeout. */
+    // App that often requires more than one minute for "adb start": net.zedge.android_v4.10.2-inlined.apk
+    private val sysCmdExecuteTimeout = 1000 * 60 * 2
 
-	override fun execute(commandDescription: String, vararg cmdLineParams: String): Array<String> {
-		return executeWithTimeout(commandDescription, sysCmdExecuteTimeout, *cmdLineParams)
-	}
+    override fun execute(commandDescription: String, vararg cmdLineParams: String): Array<String> {
+        return executeWithTimeout(commandDescription, sysCmdExecuteTimeout, *cmdLineParams)
+    }
 
-	override fun executeWithoutTimeout(commandDescription: String, vararg cmdLineParams: String): Array<String> {
-		return executeWithTimeout(commandDescription, -1, *cmdLineParams)
-	}
+    override fun executeWithoutTimeout(commandDescription: String, vararg cmdLineParams: String): Array<String> {
+        return executeWithTimeout(commandDescription, -1, *cmdLineParams)
+    }
 
-	override fun executeWithTimeout(commandDescription: String, timeout: Int, vararg cmdLineParams: String): Array<String> {
-		assert(cmdLineParams.isNotEmpty()) { "At least one command line parameter has to be given, denoting the executable." }
+    override fun executeWithTimeout(
+        commandDescription: String,
+        timeout: Int,
+        vararg cmdLineParams: String
+    ): Array<String> {
+        assert(cmdLineParams.isNotEmpty()) { "At least one command line parameter has to be given, denoting the executable." }
 
-		val params = cmdLineParams.toList().toTypedArray()
+        val params = cmdLineParams.toList().toTypedArray()
 
-		// It is recommended to build the command incrementally using .addArgument(..)
-		// rather than using CommandLine.parse(..)
-		val command = CommandLine(params[0])
-		for (param in params.drop(1).toTypedArray()) {
-			command.addArgument(param, false)
-		}
+        // It is recommended to build the command incrementally using .addArgument(..)
+        // rather than using CommandLine.parse(..)
+        val command = CommandLine(params[0])
+        for (param in params.drop(1).toTypedArray()) {
+            command.addArgument(param, false)
+        }
 
-		// Prepare the process stdout and stderr listeners.
-		val processStdoutStream = ByteArrayOutputStream()
-		val processStderrStream = ByteArrayOutputStream()
-		val pumpStreamHandler = PumpStreamHandler(processStdoutStream, processStderrStream)
+        // Prepare the process stdout and stderr listeners.
+        val processStdoutStream = ByteArrayOutputStream()
+        val processStderrStream = ByteArrayOutputStream()
+        val pumpStreamHandler = PumpStreamHandler(processStdoutStream, processStderrStream)
 
-		// Prepare the process executor.
-		val executor = DefaultExecutor()
+        // Prepare the process executor.
+        val executor = DefaultExecutor()
 
-		executor.streamHandler = pumpStreamHandler
+        executor.streamHandler = pumpStreamHandler
 
-		if (timeout > 0) {
-			// Attach the process timeout.
-			executor.watchdog = ExecuteWatchdog(timeout.toLong())
-		}
+        if (timeout > 0) {
+            // Attach the process timeout.
+            executor.watchdog = ExecuteWatchdog(timeout.toLong())
+        }
 
-		// Only exit value of 0 is allowed for the call to return successfully.
-		executor.setExitValue(0)
+        // Only exit value of 0 is allowed for the call to return successfully.
+        executor.setExitValue(0)
 
-		log.trace("$commandDescription -> $command")
+        log.trace("$commandDescription -> $command")
 
-		val executionTimeStopwatch = Stopwatch.createStarted()
+        val executionTimeStopwatch = Stopwatch.createStarted()
 
-		val exitValue = try {
-			executor.execute(command)
-		} catch (e: ExecuteException) {
-			throw SysCmdExecutorException(String.format("Failed to execute a system command.\n"
-					+ "Command: %s\n"
-					+ "Captured exit value: %d\n"
-					+ "Execution time: %s\n"
-					+ "Captured stdout: %s\n"
-					+ "Captured stderr: %s",
-					command.toString(),
-					e.exitValue,
-					getExecutionTimeMsg(executionTimeStopwatch, timeout, e.exitValue, commandDescription),
-					if (processStdoutStream.toString().isNotEmpty()) processStdoutStream.toString() else "<stdout is empty>",
-					if (processStderrStream.toString().isNotEmpty()) processStderrStream.toString() else "<stderr is empty>"),
-					e)
+        val exitValue = try {
+            executor.execute(command)
+        } catch (e: ExecuteException) {
+            throw SysCmdExecutorException(
+                String.format(
+                    "Failed to execute a system command.\n" +
+                            "Command: %s\n" +
+                            "Captured exit value: %d\n" +
+                            "Execution time: %s\n" +
+                            "Captured stdout: %s\n" +
+                            "Captured stderr: %s",
+                    command.toString(),
+                    e.exitValue,
+                    getExecutionTimeMsg(executionTimeStopwatch, timeout, e.exitValue, commandDescription),
+                    if (processStdoutStream.toString().isNotEmpty()) processStdoutStream.toString() else "<stdout is empty>",
+                    if (processStderrStream.toString().isNotEmpty()) processStderrStream.toString() else "<stderr is empty>"
+                ),
+                e
+            )
+        } catch (e: IOException) {
+            throw SysCmdExecutorException(
+                String.format(
+                    "Failed to execute a system command.\n" +
+                            "Command: %s\n" +
+                            "Captured stdout: %s\n" +
+                            "Captured stderr: %s",
+                    command.toString(),
+                    if (processStdoutStream.toString().isNotEmpty()) processStdoutStream.toString() else "<stdout is empty>",
+                    if (processStderrStream.toString().isNotEmpty()) processStderrStream.toString() else "<stderr is empty>"
+                ),
+                e
+            )
+        }
 
-		} catch (e: IOException) {
-			throw SysCmdExecutorException(String.format("Failed to execute a system command.\n"
-					+ "Command: %s\n"
-					+ "Captured stdout: %s\n"
-					+ "Captured stderr: %s",
-					command.toString(),
-					if (processStdoutStream.toString().isNotEmpty()) processStdoutStream.toString() else "<stdout is empty>",
-					if (processStderrStream.toString().isNotEmpty()) processStderrStream.toString() else "<stderr is empty>"),
-					e)
-		}
+        if (exitValue > 0) {
+            log.trace("Captured exit value: $exitValue")
+        }
 
-		if (exitValue > 0) {
-			log.trace("Captured exit value: $exitValue")
-		}
-
-		return arrayOf(processStdoutStream.toString(), processStderrStream.toString())
-	}
+        return arrayOf(processStdoutStream.toString(), processStderrStream.toString())
+    }
 }

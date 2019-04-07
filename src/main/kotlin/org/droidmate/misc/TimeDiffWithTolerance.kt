@@ -32,21 +32,29 @@ import java.time.LocalDateTime
 
 class TimeDiffWithTolerance(private val tolerance: Duration) {
 
-	private val log: Logger by lazy { LoggerFactory.getLogger(TimeDiffWithTolerance::class.java) }
+    private val log: Logger by lazy { LoggerFactory.getLogger(TimeDiffWithTolerance::class.java) }
 
-	fun warnIfBeyond(start: LocalDateTime, end: LocalDateTime, startName: String, endName: String, apkFileName: String): Boolean {
-		val startAfterEnd = Duration.between(end, start)
-		return if (startAfterEnd > tolerance) {
+    fun warnIfBeyond(
+        start: LocalDateTime,
+        end: LocalDateTime,
+        startName: String,
+        endName: String,
+        apkFileName: String
+    ): Boolean {
+        val startAfterEnd = Duration.between(end, start)
+        return if (startAfterEnd > tolerance) {
 
-			val (startNamePadded, endNamePadded) = Pad(startName, endName)
-			log.warn(Markers.appHealth,
-					"For $apkFileName, the expected start time '$startName' is after the expected end time '$endName' by more than the tolerance.\n" +
-							"$startNamePadded : $start\n" +
-							"$endNamePadded : $end\n" +
-							"Tolerance  : ${tolerance.toMillis()} ms\n" +
-							"Difference : ${startAfterEnd.toMillis()} ms")
-			true
-		} else
-			false
-	}
+            val (startNamePadded, endNamePadded) = Pad(startName, endName)
+            log.warn(
+                Markers.appHealth,
+                "For $apkFileName, the expected start time '$startName' is after the expected end time '$endName' by more than the tolerance.\n" +
+                        "$startNamePadded : $start\n" +
+                        "$endNamePadded : $end\n" +
+                        "Tolerance  : ${tolerance.toMillis()} ms\n" +
+                        "Difference : ${startAfterEnd.toMillis()} ms"
+            )
+            true
+        } else
+            false
+    }
 }

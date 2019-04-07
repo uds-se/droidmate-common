@@ -2,11 +2,11 @@
 
 package org.droidmate.legacy
 
-import java.io.InputStream
-import java.net.URL
-import java.io.IOException
-import java.io.InputStreamReader
 import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.net.URL
 
 val InputStream.text: String
     get() {
@@ -22,7 +22,6 @@ val InputStream.text: String
                 sb.append(line)
                 line = br.readLine()
             }
-
         } catch (e: IOException) {
             e.printStackTrace()
         } finally {
@@ -32,7 +31,6 @@ val InputStream.text: String
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
-
             }
         }
 
@@ -40,4 +38,4 @@ val InputStream.text: String
     }
 
 val URL.text: String
-  get() = this.readText()
+    get() = this.readText()

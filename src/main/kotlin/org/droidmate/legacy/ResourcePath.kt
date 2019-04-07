@@ -78,8 +78,10 @@ class ResourcePath(pathString: String) {
         val path = Paths.get(nonJarUrl.toURI())
 
         if (!(path.isRegularFile || path.isDirectory))
-            throw IOException("Resource named '$path' is not a regular file nor a directory.\n" +
-                    "Path to the resource: ${path.toAbsolutePath()}")
+            throw IOException(
+                "Resource named '$path' is not a regular file nor a directory.\n" +
+                        "Path to the resource: ${path.toAbsolutePath()}"
+            )
 
         this.url = nonJarUrl
         this.alternativeUrls = urls - nonJarUrl
@@ -90,9 +92,9 @@ class ResourcePath(pathString: String) {
 
     override fun toString(): String {
         return MoreObjects.toStringHelper(this)
-                .add("path", path)
-                .add("url", url)
-                .add("alternativeUrls", alternativeUrls)
-                .toString();
+            .add("path", path)
+            .add("url", url)
+            .add("alternativeUrls", alternativeUrls)
+            .toString()
     }
 }

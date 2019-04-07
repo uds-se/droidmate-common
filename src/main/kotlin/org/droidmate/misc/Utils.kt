@@ -33,113 +33,114 @@ import java.nio.file.Paths
 import kotlin.reflect.KClass
 
 class Utils {
-	companion object {
-		private val log by lazy { LoggerFactory.getLogger(Utils::class.java) }
+    companion object {
+        private val log by lazy { LoggerFactory.getLogger(Utils::class.java) }
 
-		@JvmStatic
-		@Throws(Throwable::class)
-		fun <T> retryOnException(target: () -> T,
-		                         beforeRetryCommand: () -> Any,
-		                         retryableExceptionClass: KClass<out DroidmateException>,
-		                         attempts: Int,
-		                         delay: Int,
-		                         targetName: String): T {
-			assert(attempts > 0)
-			var attemptsLeft = attempts
-			var succeeded = false
-			var exception: Throwable? = null
-			var out: T? = null
+        @JvmStatic
+        @Throws(Throwable::class)
+        fun <T> retryOnException(
+            target: () -> T,
+            beforeRetryCommand: () -> Any,
+            retryableExceptionClass: KClass<out DroidmateException>,
+            attempts: Int,
+            delay: Int,
+            targetName: String
+        ): T {
+            assert(attempts > 0)
+            var attemptsLeft = attempts
+            var succeeded = false
+            var exception: Throwable? = null
+            var out: T? = null
 
+            while (!succeeded && attemptsLeft > 0) {
+                try {
+                    out = target.invoke()
+                    succeeded = true
+                    exception = null
+                } catch (e: Throwable) {
+                    if (retryableExceptionClass.java.isAssignableFrom(e.javaClass)) {
 
-			while (!succeeded && attemptsLeft > 0) {
-				try {
-					out = target.invoke()
-					succeeded = true
-					exception = null
-				} catch (e: Throwable) {
-					if (retryableExceptionClass.java.isAssignableFrom(e.javaClass)) {
+                        beforeRetryCommand()
 
-						beforeRetryCommand()
+                        exception = e
+                        attemptsLeft--
 
-						exception = e
-						attemptsLeft--
+                        if (attemptsLeft > 0) {
+                            log.trace("Discarded $e from \"$targetName\". Sleeping for $delay and retrying.")
+                            Thread.sleep(delay.toLong())
+                        } else
+                            log.trace("Discarded $e from \"$targetName\". Giving up.")
+                    } else
+                        throw e
+                }
+            }
 
-						if (attemptsLeft > 0) {
-							log.trace("Discarded $e from \"$targetName\". Sleeping for $delay and retrying.")
-							Thread.sleep(delay.toLong())
-						} else
-							log.trace("Discarded $e from \"$targetName\". Giving up.")
-					} else
-						throw e
-				}
-			}
+            if (succeeded) {
+                assert(exception == null)
+                return out!!
+            } else {
+                assert(exception != null)
+                throw exception!!
+            }
+        }
 
-			if (succeeded) {
-				assert(exception == null)
-				return out!!
-			} else {
-				assert(exception != null)
-				throw exception!!
-			}
-		}
+        @JvmStatic
+        @Throws(Throwable::class)
+        fun retryOnFalse(target: () -> Boolean, attempts: Int, delay: Int): Boolean {
+            assert(attempts > 0)
+            var attemptsLeft = attempts
 
-		@JvmStatic
-		@Throws(Throwable::class)
-		fun retryOnFalse(target: () -> Boolean, attempts: Int, delay: Int): Boolean {
-			assert(attempts > 0)
-			var attemptsLeft = attempts
+            var succeeded = target.invoke()
+            attemptsLeft--
+            while (!succeeded && attemptsLeft > 0) {
+                Thread.sleep(delay.toLong())
+                succeeded = target.invoke()
+                attemptsLeft--
+            }
 
-			var succeeded = target.invoke()
-			attemptsLeft--
-			while (!succeeded && attemptsLeft > 0) {
-				Thread.sleep(delay.toLong())
-				succeeded = target.invoke()
-				attemptsLeft--
-			}
+            assert((attemptsLeft <= 0) || succeeded)
+            return succeeded
+        }
 
-			assert((attemptsLeft <= 0) || succeeded)
-			return succeeded
-		}
+        @JvmStatic
+        @Throws(Throwable::class)
+        fun <T> retryOnFalse(target: () -> T, validator: (T) -> Boolean, attempts: Int, delay: Int): T {
+            assert(attempts > 0)
+            var attemptsLeft = attempts
 
-		@JvmStatic
-		@Throws(Throwable::class)
-		fun <T> retryOnFalse(target: () -> T, validator: (T) -> Boolean, attempts: Int, delay: Int): T {
-			assert(attempts > 0)
-			var attemptsLeft = attempts
+            var value = target.invoke()
+            var succeeded = validator.invoke(value)
+            attemptsLeft--
+            while (!succeeded && attemptsLeft > 0) {
+                Thread.sleep(delay.toLong())
+                value = target.invoke()
+                succeeded = validator.invoke(value)
+                attemptsLeft--
+            }
 
-			var value = target.invoke()
-			var succeeded = validator.invoke(value)
-			attemptsLeft--
-			while (!succeeded && attemptsLeft > 0) {
-				Thread.sleep(delay.toLong())
-				value = target.invoke()
-				succeeded = validator.invoke(value)
-				attemptsLeft--
-			}
+            assert((attemptsLeft <= 0) || succeeded)
+            return value
+        }
 
-			assert((attemptsLeft <= 0) || succeeded)
-			return value
-		}
+        @JvmStatic
+        fun quoteIfIsPathToExecutable(path: String): String {
+            return if (SystemUtils.IS_OS_WINDOWS) {
+                if (Files.isExecutable(Paths.get(path)))
+                    "\"$path\""
+                else
+                    path
+            } else {
+                path
+            }
+        }
 
-		@JvmStatic
-		fun quoteIfIsPathToExecutable(path: String): String {
-			return if (SystemUtils.IS_OS_WINDOWS) {
-				if (Files.isExecutable(Paths.get(path)))
-					"\"$path\""
-				else
-					path
-			} else {
-				path
-			}
-		}
-
-		@JvmStatic
-		fun quoteAbsolutePaths(stringArray: Array<String>): Array<String> {
-			stringArray.forEachIndexed { idx, it ->
-				if (File(it).isAbsolute)
-					stringArray[idx] = "\"$it\""
-			}
-			return stringArray
-		}
-	}
+        @JvmStatic
+        fun quoteAbsolutePaths(stringArray: Array<String>): Array<String> {
+            stringArray.forEachIndexed { idx, it ->
+                if (File(it).isAbsolute)
+                    stringArray[idx] = "\"$it\""
+            }
+            return stringArray
+        }
+    }
 }

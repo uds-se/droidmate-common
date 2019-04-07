@@ -30,17 +30,28 @@ import java.time.LocalDateTime
 import kotlin.test.assertEquals
 
 class TimeDiffWithToleranceTest {
-	@Test
-	fun `warnIfBeyond test`() {
+    @Test
+    fun `warnIfBeyond test`() {
 
-		val diff = TimeDiffWithTolerance(Duration.ofMillis(3000))
+        val diff = TimeDiffWithTolerance(Duration.ofMillis(3000))
 
-		// Act
-		val result1 = diff.warnIfBeyond(LocalDateTime.now(), LocalDateTime.now().minusSeconds(4), "First element", "2nd item", "apkFileName")
-		val result2 = diff.warnIfBeyond(LocalDateTime.now(), LocalDateTime.now().minusSeconds(2), "Item1", "Thing2", "apkFileName")
+        // Act
+        val result1 = diff.warnIfBeyond(
+            LocalDateTime.now(),
+            LocalDateTime.now().minusSeconds(4),
+            "First element",
+            "2nd item",
+            "apkFileName"
+        )
+        val result2 = diff.warnIfBeyond(
+            LocalDateTime.now(),
+            LocalDateTime.now().minusSeconds(2),
+            "Item1",
+            "Thing2",
+            "apkFileName"
+        )
 
-		assertEquals(result1, true)
-		assertEquals(result2, false)
-	}
-
+        assertEquals(result1, true)
+        assertEquals(result2, false)
+    }
 }

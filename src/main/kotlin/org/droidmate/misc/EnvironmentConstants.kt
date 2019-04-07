@@ -28,7 +28,7 @@ import org.droidmate.legacy.OS
 import org.droidmate.legacy.asEnvDir
 import java.io.File
 import java.nio.file.Files
-import java.util.*
+import java.util.Locale
 
 /**
  * This class contains fields whose values are necessary both by the compiled classes and by gradle build scripts compiling the
@@ -39,94 +39,94 @@ import java.util.*
  * "NoClassDefFoundError" error.
  */
 class EnvironmentConstants {
-	companion object {
+    companion object {
 
-		const val apk_fixtures = "fixtures/apks"
-		const val AVD_dir_for_temp_files = "/data/local/tmp/"
-		const val dir_name_temp_extracted_resources = "temp_extracted_resources"
-		const val monitor_generator_res_name_monitor_template = "monitorTemplate.txt"
-		const val monitor_api23_apk_name = "monitor_api23.apk"
-		const val monitor_on_avd_apk_name = "monitor.apk"
-		const val api_policies_file_name = "api_policies.txt"
-		const val monitor_port_file_name = "monitor_port.tmp"
-		const val coverage_port_file_name = "coverage_port.tmp"
+        const val apk_fixtures = "fixtures/apks"
+        const val AVD_dir_for_temp_files = "/data/local/tmp/"
+        const val dir_name_temp_extracted_resources = "temp_extracted_resources"
+        const val monitor_generator_res_name_monitor_template = "monitorTemplate.txt"
+        const val monitor_api23_apk_name = "monitor_api23.apk"
+        const val monitor_on_avd_apk_name = "monitor.apk"
+        const val api_policies_file_name = "api_policies.txt"
+        const val monitor_port_file_name = "monitor_port.tmp"
+        const val coverage_port_file_name = "coverage_port.tmp"
 
-
-		private val exeExt = if (OS.isWindows) ".exe" else ""
-		//region Values directly based on system environment variables
-		private val java_home = "JAVA_HOME".asEnvDir
-		private val android_sdk_dir = "ANDROID_HOME".asEnvDir
+        private val exeExt = if (OS.isWindows) ".exe" else ""
+        //region Values directly based on system environment variables
+        private val java_home = "JAVA_HOME".asEnvDir
+        private val android_sdk_dir = "ANDROID_HOME".asEnvDir
 //endregion
 
+        //region Android SDK components
+// $ANDROID_HOME/build-tools/ lists available versions -> we want to find the highest installed version
+        var max: Pair<String, Int> = Pair("", 0).let {
+            var max = Pair("", 0)
+            Files.list(android_sdk_dir.resolve("build-tools")).use { file ->
+                println("available build-tools: ")
+                file.forEach {
+                    val fileName = it.fileName.toString()
+                    println("\t$fileName")
+                    val versionCmp = fileName.replace(".", "").toIntOrNull()
+                    if (versionCmp != null && versionCmp > max.second)
+                        max = Pair(fileName, versionCmp)
+                }
+            }
+            max
+        }
+        private val build_tools_version = max.first.also {
+            println("max build tools $max")
+        }
 
-		//region Android SDK components
-//$ANDROID_HOME/build-tools/ lists available versions -> we want to find the highest installed version
-		var max:Pair<String,Int> = Pair("",0).let {
-			var max = Pair("",0)
-			Files.list(android_sdk_dir.resolve("build-tools")).use { file ->
-				println("available build-tools: ")
-				file.forEach {
-					val fileName = it.fileName.toString()
-					println("\t$fileName")
-					val versionCmp = fileName.replace(".","").toIntOrNull()
-					if(versionCmp!=null && versionCmp > max.second)
-						max = Pair(fileName,versionCmp)
-				} }
-			max
-		}
-		private val build_tools_version = max.first.also {
-			println("max build tools $max")
-		}
+        private val aapt_command_relative = "build-tools/$build_tools_version/aapt$exeExt"
+        @JvmStatic
+        val aapt_command = android_sdk_dir.resolve(aapt_command_relative).toString()
+        private val adb_command_relative = "platform-tools/adb$exeExt"
+        @JvmStatic
+        val adb_command = android_sdk_dir.resolve(adb_command_relative).toString()
+        private val jarsigner_relative_path = "bin/jarsigner$exeExt"
+        @JvmStatic
+        val jarsigner = java_home.resolve(jarsigner_relative_path)
 
-		private val aapt_command_relative = "build-tools/$build_tools_version/aapt$exeExt"
-		@JvmStatic
-		val aapt_command = android_sdk_dir.resolve(aapt_command_relative).toString()
-		private val adb_command_relative = "platform-tools/adb$exeExt"
-		@JvmStatic
-		val adb_command = android_sdk_dir.resolve(adb_command_relative).toString()
-		private val jarsigner_relative_path = "bin/jarsigner$exeExt"
-		@JvmStatic
-		val jarsigner = java_home.resolve(jarsigner_relative_path)
+        private val availableVersion = let {
+            var minApi =
+                Pair("", Int.MAX_VALUE) // TODO do we really want the lowest from 23 and not the highest version?
+            var anyVersion = ""
+            Files.list(android_sdk_dir.resolve("platforms")).use { file ->
+                println("available platforms versions: ")
+                file.forEach {
+                    val fileName = it.fileName.toString()
+                    anyVersion = fileName
+                    println("\t$fileName")
+                    val versionCmp = fileName.replace("android-", "").toIntOrNull()
+                    if (versionCmp != null && versionCmp >= 23 && versionCmp < minApi.second)
+                        minApi = Pair(fileName, versionCmp)
+                }
+            }
+            if (minApi.first.isBlank()) anyVersion else minApi.first
+        }
 
+        private val android_platform_dir_api23 =
+            android_sdk_dir.resolve("platforms/$availableVersion")
 
-		private val availableVersion = let{
-			var minApi = Pair("",Int.MAX_VALUE)  //TODO do we really want the lowest from 23 and not the highest version?
-			var anyVersion = ""
-			Files.list(android_sdk_dir.resolve("platforms")).use{ file ->
-				println("available platforms versions: ")
-				file.forEach {
-					val fileName = it.fileName.toString()
-					anyVersion = fileName
-					println("\t$fileName")
-					val versionCmp = fileName.replace("android-","").toIntOrNull()
-					if(versionCmp!=null && versionCmp>=23 && versionCmp < minApi.second)
-						minApi = Pair(fileName,versionCmp)
-				}
-			}
-			if(minApi.first.isBlank()) anyVersion else minApi.first
-		}
+        val uiautomator_jar_api23 = android_platform_dir_api23.resolve("uiautomator.jar")
+        @JvmStatic
+        val android_jar_api23 = android_platform_dir_api23.resolve("android.jar").toString()
 
-		private val android_platform_dir_api23 =
-				android_sdk_dir.resolve("platforms/$availableVersion")
+        private const val monitor_generator_output_dir = "temp"
+        private fun generatedMonitor(apiLevel: Int): String {
+            return "$monitor_generator_output_dir/generated_Monitor_api$apiLevel.java"
+        }
 
-		val uiautomator_jar_api23 = android_platform_dir_api23.resolve("uiautomator.jar")
-		@JvmStatic
-		val android_jar_api23 = android_platform_dir_api23.resolve("android.jar").toString()
+        @JvmStatic
+        val monitor_generator_output_relative_path_api23 = generatedMonitor(23)
 
-		private const val monitor_generator_output_dir = "temp"
-		private fun generatedMonitor(apiLevel: Int): String {
-			return "$monitor_generator_output_dir/generated_Monitor_api$apiLevel.java"
-		}
-		@JvmStatic
-		val monitor_generator_output_relative_path_api23 = generatedMonitor(23)
-
-		private const val monitored_apk_fixture_api23_name = "MonitoredApkFixture_api23-debug.apk"
-		@JvmStatic
-		val monitored_inlined_apk_fixture_api23_name = "${monitored_apk_fixture_api23_name.removeSuffix(".apk")}-inlined.apk"
-		@JvmStatic
-		val test_temp_dir_name = "out${File.separator}temp_dir_for_tests"
-		@JvmStatic
-		val locale: Locale = Locale.US
-
-	}
+        private const val monitored_apk_fixture_api23_name = "MonitoredApkFixture_api23-debug.apk"
+        @JvmStatic
+        val monitored_inlined_apk_fixture_api23_name =
+            "${monitored_apk_fixture_api23_name.removeSuffix(".apk")}-inlined.apk"
+        @JvmStatic
+        val test_temp_dir_name = "out${File.separator}temp_dir_for_tests"
+        @JvmStatic
+        val locale: Locale = Locale.US
+    }
 }

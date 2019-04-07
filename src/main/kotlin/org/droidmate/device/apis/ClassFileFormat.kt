@@ -26,79 +26,79 @@ package org.droidmate.device.apis
 
 /** See:  http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.2 */
 class ClassFileFormat {
-	companion object {
-		enum class baseTypeToSourceMap(val dataType: String) {
-			B("byte"),
-			C("char"),
-			D("double"),
-			F("float"),
-			I("int"),
-			J("long"),
-			S("short"),
-			Z("boolean"),
-			V("void")
-		}
+    companion object {
+        enum class baseTypeToSourceMap(val dataType: String) {
+            B("byte"),
+            C("char"),
+            D("double"),
+            F("float"),
+            I("int"),
+            J("long"),
+            S("short"),
+            Z("boolean"),
+            V("void")
+        }
 
-		/*
+        /*
 The javaJavaIdentifier stuff is based on:
 http://stackoverflow.com/questions/5205339/regular-expression-matching-fully-qualified-java-classes
 http://docs.oracle.com/javase/8/docs/api/java/lang/Character.html#isJavaIdentifierPart-char-
 */
-		val genericTypeEscape = "_"
-		private val addedSymbols = "[<>\\?\\[\\]$genericTypeEscape]"
-		private val idStart = "(?:\\p{javaJavaIdentifierStart}|$addedSymbols)"
-		private val idParts = "(?:\\p{javaJavaIdentifierPart}|$addedSymbols)*"
-		private val javaClassIdPattern = "(?:$idStart$idParts\\.)+$idStart$idParts"
-		private val javaPrimitiveTypePattern = baseTypeToSourceMap.values().joinToString("|") { it.dataType }
-		val javaTypePattern = "(?:$javaPrimitiveTypePattern|$javaClassIdPattern)(?:\\[\\])*"
+        val genericTypeEscape = "_"
+        private val addedSymbols = "[<>\\?\\[\\]$genericTypeEscape]"
+        private val idStart = "(?:\\p{javaJavaIdentifierStart}|$addedSymbols)"
+        private val idParts = "(?:\\p{javaJavaIdentifierPart}|$addedSymbols)*"
+        private val javaClassIdPattern = "(?:$idStart$idParts\\.)+$idStart$idParts"
+        private val javaPrimitiveTypePattern = baseTypeToSourceMap.values().joinToString("|") { it.dataType }
+        val javaTypePattern = "(?:$javaPrimitiveTypePattern|$javaClassIdPattern)(?:\\[\\])*"
 
-		@JvmStatic
-		fun matchClassFieldDescriptors(classFieldDescriptors: String): List<String> {
-			// Notation reference: http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.2
-			// (?: is a non-capturing group. See http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#special
-			val base = baseTypeToSourceMap.values().joinToString("|")
-			val arrays = "\\[*"
-			val obj = "L(?:\\w+/)*(?:(?:\\w|\\$)*\\w)+;"
+        @JvmStatic
+        fun matchClassFieldDescriptors(classFieldDescriptors: String): List<String> {
+            // Notation reference: http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.2
+            // (?: is a non-capturing group. See http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#special
+            val base = baseTypeToSourceMap.values().joinToString("|")
+            val arrays = "\\[*"
+            val obj = "L(?:\\w+/)*(?:(?:\\w|\\$)*\\w)+;"
 
-			//Matcher matcher = classFieldDescriptors =~ /$arrays(?:$base|$object)/
+            // Matcher matcher = classFieldDescriptors =~ /$arrays(?:$base|$object)/
 
-			//val arrays = "[*"
-			//val obj = "L(?:\\w+/)*(?:(?:\\w|\$)*\\w)+;"
+            // val arrays = "[*"
+            // val obj = "L(?:\\w+/)*(?:(?:\\w|\$)*\\w)+;"
 
-			val matcher = "$arrays(?:$base|$obj)".toRegex()
+            val matcher = "$arrays(?:$base|$obj)".toRegex()
 
-			val out: MutableList<String> = mutableListOf()
-			val matchResult = matcher.findAll(classFieldDescriptors)
+            val out: MutableList<String> = mutableListOf()
+            val matchResult = matcher.findAll(classFieldDescriptors)
 
-			matchResult.forEach { out.add(it.groupValues.joinToString("")) }
+            matchResult.forEach { out.add(it.groupValues.joinToString("")) }
 
-			assert(out.joinToString("") == classFieldDescriptors,
-					{ out.joinToString("") + "\t\t" + classFieldDescriptors })
-			return out
-		}
+            assert(out.joinToString("") == classFieldDescriptors,
+                { out.joinToString("") + "\t\t" + classFieldDescriptors })
+            return out
+        }
 
-		@JvmStatic
-		@JvmOverloads
-		fun convertJNItypeNotationToSourceCode(type: String, replaceDollarsWithDots: Boolean = false): String {
-			val out = StringBuilder()
-			val arraysCount = type.count { it == '[' }
-			var typePrim = type.replace("[", "")
+        @JvmStatic
+        @JvmOverloads
+        fun convertJNItypeNotationToSourceCode(type: String, replaceDollarsWithDots: Boolean = false): String {
+            val out = StringBuilder()
+            val arraysCount = type.count { it == '[' }
+            var typePrim = type.replace("[", "")
 
-			if (typePrim.startsWith("L")) {
-				assert(typePrim.endsWith(";"))
-				typePrim = typePrim.substring(1, typePrim.length - 2).replace("/", ".")
-				if (replaceDollarsWithDots)
-					typePrim = typePrim.replace("\$", ".")
+            if (typePrim.startsWith("L")) {
+                assert(typePrim.endsWith(";"))
+                typePrim = typePrim.substring(1, typePrim.length - 2).replace("/", ".")
+                if (replaceDollarsWithDots)
+                    typePrim = typePrim.replace("\$", ".")
 
-				out.append(typePrim)
-			} else {
-				assert(typePrim.length == 1)
-				val baseType = baseTypeToSourceMap.valueOf(typePrim)
-				out.append(baseType)
-			}
+                out.append(typePrim)
+            } else {
+                assert(typePrim.length == 1)
+                val baseType = baseTypeToSourceMap.valueOf(typePrim)
+                out.append(baseType)
+            }
 
-			(0 until arraysCount).forEach { out.append("[]") }
-			return out.toString()
-		}
-	}
+            (0 until arraysCount).forEach { out.append("[]") }
+            return out.toString()
+        }
+    }
 }

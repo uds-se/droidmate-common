@@ -26,15 +26,15 @@
 package org.droidmate.misc
 
 open class DroidmateException : Exception {
-	companion object {
-		private const val serialVersionUID: Long = 1
-	}
+    companion object {
+        private const val serialVersionUID: Long = 1
+    }
 
-	constructor() : super()
+    constructor() : super()
 
-	constructor(cause: Throwable) : super(cause)
+    constructor(cause: Throwable) : super(cause)
 
-	constructor(message: String, cause: Throwable) : super(message, cause)
+    constructor(message: String, cause: Throwable) : super(message, cause)
 
-	constructor(message: String) : super(message)
+    constructor(message: String) : super(message)
 }

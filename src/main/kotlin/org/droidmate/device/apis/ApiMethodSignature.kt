@@ -25,106 +25,120 @@
 
 package org.droidmate.device.apis
 
-class ApiMethodSignature constructor(var objectClass: String,
-                                     var returnClass: String,
-                                     var methodName: String,
-                                     var paramClasses: List<String>,
-                                     var isStatic: Boolean = false,
-                                     var hook: String,
-                                     var name: String,
-                                     var logId: String,
-                                     var invokeCode: String,
-                                     var defaultValue: String,
-                                     var exceptionType: String) {
-	/**
-	 * <p>
-	 * Parsing done according to:
-	 *
-	 * </p><p>
-	 * <code>
-	 * http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3<br/>
-	 * </code>
-	 * </p><p>
-	 * Additional reference:
-	 * </p><p>
-	 * <code>
-	 * http://docs.oracle.com/javase/6/docs/api/java/lang/Class.html#getName%28%29<br/>
-	 * http://stackoverflow.com/questions/5085889/l-array-notation-where-does-it-come-from<br/>
-	 * http://stackoverflow.com/questions/3442090/java-what-is-this-ljava-lang-object<br/>
-	 * </code>
-	 * </p>
-	 */
-	companion object {
-		private val sourceToBaseTypeMap = hashMapOf(
-				"byte" to "B",
-				"char" to "C",
-				"double" to "D",
-				"float" to "F",
-				"int" to "I",
-				"long" to "J",
-				"short" to "S",
-				"boolean" to "Z",
-				"void" to "V")
+class ApiMethodSignature constructor(
+    var objectClass: String,
+    var returnClass: String,
+    var methodName: String,
+    var paramClasses: List<String>,
+    var isStatic: Boolean = false,
+    var hook: String,
+    var name: String,
+    var logId: String,
+    var invokeCode: String,
+    var defaultValue: String,
+    var exceptionType: String
+) {
+    /**
+     * <p>
+     * Parsing done according to:
+     *
+     * </p><p>
+     * <code>
+     * http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3<br/>
+     * </code>
+     * </p><p>
+     * Additional reference:
+     * </p><p>
+     * <code>
+     * http://docs.oracle.com/javase/6/docs/api/java/lang/Class.html#getName%28%29<br/>
+     * http://stackoverflow.com/questions/5085889/l-array-notation-where-does-it-come-from<br/>
+     * http://stackoverflow.com/questions/3442090/java-what-is-this-ljava-lang-object<br/>
+     * </code>
+     * </p>
+     */
+    companion object {
+        private val sourceToBaseTypeMap = hashMapOf(
+            "byte" to "B",
+            "char" to "C",
+            "double" to "D",
+            "float" to "F",
+            "int" to "I",
+            "long" to "J",
+            "short" to "S",
+            "boolean" to "Z",
+            "void" to "V"
+        )
 
-		@JvmStatic
-		fun fromDescriptor(objectClass: String,
-		                   returnClass: String,
-		                   methodName: String,
-		                   paramClasses: List<String>,
-		                   isStatic: Boolean,
-		                   hook: String,
-		                   name: String,
-		                   logId: String,
-		                   invokeCode: String,
-		                   defaultValue: String,
-		                   exceptionType: String): ApiMethodSignature {
-			return ApiMethodSignature(objectClass, returnClass, methodName, paramClasses,
-					isStatic, hook, name, logId, invokeCode, defaultValue, exceptionType)
-		}
+        @JvmStatic
+        fun fromDescriptor(
+            objectClass: String,
+            returnClass: String,
+            methodName: String,
+            paramClasses: List<String>,
+            isStatic: Boolean,
+            hook: String,
+            name: String,
+            logId: String,
+            invokeCode: String,
+            defaultValue: String,
+            exceptionType: String
+        ): ApiMethodSignature {
+            return ApiMethodSignature(
+                objectClass, returnClass, methodName, paramClasses,
+                isStatic, hook, name, logId, invokeCode, defaultValue, exceptionType
+            )
+        }
 
-		@JvmStatic
-		private fun convertToJniNotation(input: String): String {
-			return if (sourceToBaseTypeMap.containsKey(input))
-				sourceToBaseTypeMap[input]!!
-			else
-				"L" + input.replace(".", "/") + ";"
-		}
-	}
+        @JvmStatic
+        private fun convertToJniNotation(input: String): String {
+            return if (sourceToBaseTypeMap.containsKey(input))
+                sourceToBaseTypeMap[input]!!
+            else
+                "L" + input.replace(".", "/") + ";"
+        }
+    }
 
-	fun assertValid() {
-		assert(objectClass.isNotEmpty())
-		assert(returnClass.isNotEmpty())
-		assert(methodName.length > 0)
-		assert(!methodName.startsWith("<") || (methodName.endsWith(">")))
-		assert(hook.isNotEmpty())
-		assert(name.isNotEmpty())
-		assert(logId.isNotEmpty())
-		assert(invokeCode.isNotEmpty())
-	}
+    fun assertValid() {
+        assert(objectClass.isNotEmpty())
+        assert(returnClass.isNotEmpty())
+        assert(methodName.length > 0)
+        assert(!methodName.startsWith("<") || (methodName.endsWith(">")))
+        assert(hook.isNotEmpty())
+        assert(name.isNotEmpty())
+        assert(logId.isNotEmpty())
+        assert(invokeCode.isNotEmpty())
+    }
 
-	fun getDistinctSignature(): List<Any> = arrayListOf(objectClass, methodName, paramClasses)
+    fun getDistinctSignature(): List<Any> = arrayListOf(objectClass, methodName, paramClasses)
 
-	fun getShortSignature(): String {
-		val paramString = if (paramClasses.isNotEmpty()) paramClasses.joinToString(", ") else ""
-		return "$objectClass.$methodName($paramString)"
-	}
+    fun getShortSignature(): String {
+        val paramString = if (paramClasses.isNotEmpty()) paramClasses.joinToString(", ") else ""
+        return "$objectClass.$methodName($paramString)"
+    }
 
-	fun isConstructor(): Boolean = methodName == "<init>"
+    fun isConstructor(): Boolean = methodName == "<init>"
 
-	fun getObjectClassJni(): String = convertToJniNotation(objectClass)
+    fun getObjectClassJni(): String = convertToJniNotation(objectClass)
 
-	fun getParamsJni(): String {
-		return paramClasses.map { convertToJniNotation(it) }.joinToString("")
-	}
+    fun getParamsJni(): String {
+        return paramClasses.map { convertToJniNotation(it) }.joinToString("")
+    }
 
-	@Suppress("unused")
-	private fun debugPrintln(methodSignature: String, objectClass: String, returnClass: String, methodName: String, paramsList: List<String>, isStatic: Boolean) {
-		println("signature   $methodSignature")
-		println("objectClass $objectClass")
-		println("returnClass $returnClass")
-		println("methodName  $methodName")
-		println("paramsList  $paramsList")
-		println("isStatic    $isStatic")
-		println("")
-	}
+    @Suppress("unused")
+    private fun debugPrintln(
+        methodSignature: String,
+        objectClass: String,
+        returnClass: String,
+        methodName: String,
+        paramsList: List<String>,
+        isStatic: Boolean
+    ) {
+        println("signature   $methodSignature")
+        println("objectClass $objectClass")
+        println("returnClass $returnClass")
+        println("methodName  $methodName")
+        println("paramsList  $paramsList")
+        println("isStatic    $isStatic")
+        println("")
+    }
 }

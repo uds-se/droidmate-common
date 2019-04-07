@@ -26,15 +26,15 @@ package org.droidmate.misc
 
 class Pad(first: String, second: String) {
 
-	private val firstPadded: String
-	private val secondPadded: String
+    private val firstPadded: String
+    private val secondPadded: String
 
-	operator fun component1() = firstPadded
-	operator fun component2() = secondPadded
+    operator fun component1() = firstPadded
+    operator fun component2() = secondPadded
 
-	init {
-		val padSize = Math.max(first.length, second.length)
-		firstPadded = first.padEnd(padSize)
-		secondPadded = second.padEnd(padSize)
-	}
+    init {
+        val padSize = Math.max(first.length, second.length)
+        firstPadded = first.padEnd(padSize)
+        secondPadded = second.padEnd(padSize)
+    }
 }

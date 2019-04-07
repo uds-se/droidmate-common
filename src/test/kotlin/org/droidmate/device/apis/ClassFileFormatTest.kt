@@ -25,7 +25,6 @@
 
 package org.droidmate.device.apis
 
-import org.droidmate.device.apis.ClassFileFormat
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,56 +34,58 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(JUnit4::class)
 class ClassFileFormatTest {
-	@Test
-	fun `Parses java parameter descriptors`() {
-		// Act 1
-		ClassFileFormat.matchClassFieldDescriptors("")
+    @Test
+    fun `Parses java parameter descriptors`() {
+        // Act 1
+        ClassFileFormat.matchClassFieldDescriptors("")
 
-		val expected = arrayListOf(
-				"Z",
-				"C",
-				"[[D",
-				"Landroid/net/Uri;",
-				"[Lclass1;",
-				"[Lclas/s2s/x;",
-				"J",
-				"Landroid/content/ContentValues;",
-				"[Z",
-				"F",
-				"S",
-				"[V",
-				"[[Ljava/lang/String;",
-				"Landroid/location/GpsStatus\$Listener\$SubListener;")
+        val expected = arrayListOf(
+            "Z",
+            "C",
+            "[[D",
+            "Landroid/net/Uri;",
+            "[Lclass1;",
+            "[Lclas/s2s/x;",
+            "J",
+            "Landroid/content/ContentValues;",
+            "[Z",
+            "F",
+            "S",
+            "[V",
+            "[[Ljava/lang/String;",
+            "Landroid/location/GpsStatus\$Listener\$SubListener;"
+        )
 
-		// Act 2
-		val descriptors = ClassFileFormat.matchClassFieldDescriptors(expected.joinToString(""))
+        // Act 2
+        val descriptors = ClassFileFormat.matchClassFieldDescriptors(expected.joinToString(""))
 
-		expected.forEachIndexed { i, expectedItem ->
-			assert(expectedItem == descriptors[i])
-		}
-		assert(expected == descriptors)
-	}
+        expected.forEachIndexed { i, expectedItem ->
+            assert(expectedItem == descriptors[i])
+        }
+        assert(expected == descriptors)
+    }
 
-	@Test
-	fun `Matches java type patterns`() {
-		val m = ClassFileFormat.javaTypePattern.toRegex()
+    @Test
+    fun `Matches java type patterns`() {
+        val m = ClassFileFormat.javaTypePattern.toRegex()
 
-		arrayListOf("boolean",
-				"int",
-				"some.class.name",
-				"java.lang.String[][]",
-				"java.util.List<java.util.String[]>[]",
-				"org.apache.http.client.ResponseHandler<?_extends_T>",
-				"java.util.List<?_extends_Integer[][]>[]"
+        arrayListOf(
+            "boolean",
+            "int",
+            "some.class.name",
+            "java.lang.String[][]",
+            "java.util.List<java.util.String[]>[]",
+            "org.apache.http.client.ResponseHandler<?_extends_T>",
+            "java.util.List<?_extends_Integer[][]>[]"
 
-		).forEach {
-			// Act
-			assert(m.matches(it))
-		}
+        ).forEach {
+            // Act
+            assert(m.matches(it))
+        }
 
-		arrayListOf("intx", "[]<>?").forEach {
-			// Act
-			assert(!m.matches(it))
-		}
-	}
+        arrayListOf("intx", "[]<>?").forEach {
+            // Act
+            assert(!m.matches(it))
+        }
+    }
 }

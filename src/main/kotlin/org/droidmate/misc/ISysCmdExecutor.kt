@@ -31,44 +31,49 @@ import java.util.concurrent.TimeUnit
 
 interface ISysCmdExecutor {
 
-	companion object {
-		private val log = LoggerFactory.getLogger(SysCmdInterruptableExecutor::class.java)
-		private val TIMEOUT_REACHED_ZONE = 100
+    companion object {
+        private val log = LoggerFactory.getLogger(SysCmdInterruptableExecutor::class.java)
+        private val TIMEOUT_REACHED_ZONE = 100
 
-		fun getExecutionTimeMsg(executionTimeStopwatch: Stopwatch, timeout: Int, exitValue: Int, commandDescription: String): String {
-			val mills = executionTimeStopwatch.elapsed(TimeUnit.MILLISECONDS)
-			val seconds = executionTimeStopwatch.elapsed(TimeUnit.SECONDS)
+        fun getExecutionTimeMsg(
+            executionTimeStopwatch: Stopwatch,
+            timeout: Int,
+            exitValue: Int,
+            commandDescription: String
+        ): String {
+            val mills = executionTimeStopwatch.elapsed(TimeUnit.MILLISECONDS)
+            val seconds = executionTimeStopwatch.elapsed(TimeUnit.SECONDS)
 
-			// WISH here instead I could determine if the process was killed by watchdog with
-			// org.apache.commons.exec.ExecuteWatchdog.killedProcess
-			// For more, see comment of org.apache.commons.exec.ExecuteWatchdog
-			if (mills >= (timeout - TIMEOUT_REACHED_ZONE) && mills <= (timeout + TIMEOUT_REACHED_ZONE)) {
-				var returnedString = "$seconds seconds. The execution time was +- $TIMEOUT_REACHED_ZONE " +
-						"milliseconds of the execution timeout."
+            // WISH here instead I could determine if the process was killed by watchdog with
+            // org.apache.commons.exec.ExecuteWatchdog.killedProcess
+            // For more, see comment of org.apache.commons.exec.ExecuteWatchdog
+            if (mills >= (timeout - TIMEOUT_REACHED_ZONE) && mills <= (timeout + TIMEOUT_REACHED_ZONE)) {
+                var returnedString = "$seconds seconds. The execution time was +- $TIMEOUT_REACHED_ZONE " +
+                        "milliseconds of the execution timeout."
 
-				if (exitValue != 0)
-					returnedString += " Reaching the timeout might be the cause of the process returning non-zero value." +
-							" Try increasing the timeout (by changing appropriate cmd line parameter) or, if this doesn't help, " +
-							"be aware the process might not be terminating at all."
+                if (exitValue != 0)
+                    returnedString += " Reaching the timeout might be the cause of the process returning non-zero value." +
+                            " Try increasing the timeout (by changing appropriate cmd line parameter) or, if this doesn't help, " +
+                            "be aware the process might not be terminating at all."
 
-				log.debug("The command with description \"$commandDescription\" executed for $returnedString")
+                log.debug("The command with description \"$commandDescription\" executed for $returnedString")
 
-				return returnedString
-			}
+                return returnedString
+            }
 
-			return "$seconds seconds"
-		}
-	}
+            return "$seconds seconds"
+        }
+    }
 
-	@Throws(SysCmdExecutorException::class)
-	fun execute(commandDescription: String, vararg cmdLineParams: String): Array<String>
+    @Throws(SysCmdExecutorException::class)
+    fun execute(commandDescription: String, vararg cmdLineParams: String): Array<String>
 
-	@Throws(SysCmdExecutorException::class)
-	fun executeWithoutTimeout(commandDescription: String, vararg cmdLineParams: String): Array<String>
+    @Throws(SysCmdExecutorException::class)
+    fun executeWithoutTimeout(commandDescription: String, vararg cmdLineParams: String): Array<String>
 
-	/**
-	 * @timeout timout for the process in milli seconds
-	 */
-	@Throws(SysCmdExecutorException::class)
-	fun executeWithTimeout(commandDescription: String, timeout: Int, vararg cmdLineParams: String): Array<String>
+    /**
+     * @timeout timout for the process in milli seconds
+     */
+    @Throws(SysCmdExecutorException::class)
+    fun executeWithTimeout(commandDescription: String, timeout: Int, vararg cmdLineParams: String): Array<String>
 }

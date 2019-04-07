@@ -30,16 +30,14 @@ import kotlin.test.assertEquals
 
 class extensions_file_systemKtTest {
 
-	@Test
-	fun withExtensionTest() {
-		val fixture = Paths.get("/some/path/xyz.txt")
+    @Test
+    fun withExtensionTest() {
+        val fixture = Paths.get("/some/path/xyz.txt")
 
-		// Act
-		val actual = fixture.withExtension("newext")
+        // Act
+        val actual = fixture.withExtension("newext")
 
-		assertEquals(actual.parent.toString(), fixture.parent.toString())
-		assertEquals(actual.fileName.toString(), "xyz.newext")
-	}
+        assertEquals(actual.parent.toString(), fixture.parent.toString())
+        assertEquals(actual.fileName.toString(), "xyz.newext")
+    }
 }
-
-

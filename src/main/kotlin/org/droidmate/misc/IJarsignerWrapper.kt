@@ -28,5 +28,5 @@ package org.droidmate.misc
 import java.nio.file.Path
 
 interface IJarsignerWrapper {
-	fun signWithDebugKey(apk: Path): Path
+    fun signWithDebugKey(apk: Path): Path
 }

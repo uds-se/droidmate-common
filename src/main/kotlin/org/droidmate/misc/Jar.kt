@@ -30,8 +30,8 @@ import java.nio.file.Path
 
 class Jar(val path: Path) {
 
-	init {
-		assert(Files.isRegularFile(path))
-		assert(path.fileName.toString().endsWith(".jar"))
-	}
+    init {
+        assert(Files.isRegularFile(path))
+        assert(path.fileName.toString().endsWith(".jar"))
+    }
 }

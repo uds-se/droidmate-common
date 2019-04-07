@@ -32,33 +32,43 @@ import java.time.LocalDateTime
 
 @Suppress("unused") // Actually used in org.droidmate.exploration.data_aggregators.ExplorationOutput2Builder.buildDeviceLogs
 class ApiLogcatMessageTestHelper {
-	companion object {
-		@JvmStatic
-		val log_level_for_testing = "I"
+    companion object {
+        @JvmStatic
+        val log_level_for_testing = "I"
 
-		@Suppress("UNCHECKED_CAST")
-		@JvmStatic
-		fun newApiLogcatMessage(apiAttributes: MutableMap<String, Any>): IApiLogcatMessage {
-			val time = apiAttributes.remove("time") as LocalDateTime?
-			apiAttributes["stackTrace"] = apiAttributes["stackTrace"] ?: "$Api.monitorRedirectionPrefix"
+        @Suppress("UNCHECKED_CAST")
+        @JvmStatic
+        fun newApiLogcatMessage(apiAttributes: MutableMap<String, Any>): IApiLogcatMessage {
+            val time = apiAttributes.remove("time") as LocalDateTime?
+            apiAttributes["stackTrace"] = apiAttributes["stackTrace"] ?: "$Api.monitorRedirectionPrefix"
 
-			val objectClass: String = apiAttributes["objectClass"].toString()
-			val methodName: String = apiAttributes["methodName"].toString()
-			val returnClass: String = apiAttributes["returnClass"].toString()
-			val paramTypes: List<String> = apiAttributes["paramTypes"] as List<String>
-			val paramValues: List<String> = apiAttributes["paramValues"] as List<String>
-			val threadId: String = apiAttributes["threadId"].toString()
-			val stackTrace: String = apiAttributes["stackTrace"].toString()
+            val objectClass: String = apiAttributes["objectClass"].toString()
+            val methodName: String = apiAttributes["methodName"].toString()
+            val returnClass: String = apiAttributes["returnClass"].toString()
+            val paramTypes: List<String> = apiAttributes["paramTypes"] as List<String>
+            val paramValues: List<String> = apiAttributes["paramValues"] as List<String>
+            val threadId: String = apiAttributes["threadId"].toString()
+            val stackTrace: String = apiAttributes["stackTrace"].toString()
 
-			val logcatMessage = TimeFormattedLogcatMessage.from(
-					time ?: TimeFormattedLogcatMessage.assumedDate,
-					log_level_for_testing,
-					MonitorConstants.tag_api,
-					"3993", // arbitrary process ID
-					ApiLogcatMessage.toLogcatMessagePayload(Api(objectClass, methodName, returnClass, paramTypes, paramValues, threadId, stackTrace))
-			)
+            val logcatMessage = TimeFormattedLogcatMessage.from(
+                time ?: TimeFormattedLogcatMessage.assumedDate,
+                log_level_for_testing,
+                MonitorConstants.tag_api,
+                "3993", // arbitrary process ID
+                ApiLogcatMessage.toLogcatMessagePayload(
+                    Api(
+                        objectClass,
+                        methodName,
+                        returnClass,
+                        paramTypes,
+                        paramValues,
+                        threadId,
+                        stackTrace
+                    )
+                )
+            )
 
-			return ApiLogcatMessage.from(logcatMessage)
-		}
-	}
+            return ApiLogcatMessage.from(logcatMessage)
+        }
+    }
 }

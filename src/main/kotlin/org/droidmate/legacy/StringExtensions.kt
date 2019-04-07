@@ -13,26 +13,27 @@ import java.nio.file.Paths
  *
  * Throws an [IllegalStateException] if any of the assumptions is violated.
  */
-val String.asEnvDir: Path get() {
-  val value = System.getenv(this)
+val String.asEnvDir: Path
+    get() {
+        val value = System.getenv(this)
 
-  checkNotNull(value) { "System.getenv($this) should denote a directory. It is instead null." }
-  check(value.isNotEmpty()) { "System.getenv($this) should denote a directory. It is instead an empty string." }
+        checkNotNull(value) { "System.getenv($this) should denote a directory. It is instead null." }
+        check(value.isNotEmpty()) { "System.getenv($this) should denote a directory. It is instead an empty string." }
 
-  val dir = Paths.get(value)
+        val dir = Paths.get(value)
 
-  check(dir.isDirectory) {
-    "System.getenv($this) should be a path pointing to an existing directory. " +
-            "The faulty path: $dir"
-  }
+        check(dir.isDirectory) {
+            "System.getenv($this) should be a path pointing to an existing directory. " +
+                    "The faulty path: $dir"
+        }
 
-  return dir
-}
+        return dir
+    }
 
 fun String.removeColumn(column: Int): String {
-  return this.lines().map { line ->
-    val columns = Regex("\\s*\\S+").findAll(line).map { it.value }
+    return this.lines().map { line ->
+        val columns = Regex("\\s*\\S+").findAll(line).map { it.value }
 
-    columns.filterIndexed { index, _ -> index+1 != column }.joinToString(separator = "")
-  }.joinToString(separator = "\n")
+        columns.filterIndexed { index, _ -> index + 1 != column }.joinToString(separator = "")
+    }.joinToString(separator = "\n")
 }

@@ -39,19 +39,19 @@ import ch.qos.logback.core.spi.FilterReply
  * </p>
  */
 class AllDroidmateMarkersFilter : AbstractMatcherFilter<ILoggingEvent>() {
-	override fun decide(event: ILoggingEvent?): FilterReply {
-		if (event == null)
-			return onMismatch
+    override fun decide(event: ILoggingEvent?): FilterReply {
+        if (event == null)
+            return onMismatch
 
-		val marker = event.marker
+        val marker = event.marker
 
-		return if (!isStarted)
-			FilterReply.NEUTRAL
-		else if (marker == null)
-			onMismatch
-		else if (Markers.getAllMarkers().any { it.contains(marker) })
-			onMatch
-		else
-			onMismatch
-	}
+        return if (!isStarted)
+            FilterReply.NEUTRAL
+        else if (marker == null)
+            onMismatch
+        else if (Markers.getAllMarkers().any { it.contains(marker) })
+            onMatch
+        else
+            onMismatch
+    }
 }

@@ -33,31 +33,31 @@ import java.nio.file.Path
 import kotlin.streams.toList
 
 val Path.text: String
-	get() {
-		return Files.readAllLines(this).joinToString(System.lineSeparator())
-	}
+    get() {
+        return Files.readAllLines(this).joinToString(System.lineSeparator())
+    }
 
 fun Path.deleteDir(): Boolean {
-	return try {
-		if (Files.exists(this))
-			Files.walk(this, FileVisitOption.FOLLOW_LINKS)
-					.toList()
-					.sorted()
-					.reversed()
-					.forEach { Files.delete(it) }
-		true
-	} catch (e: IOException) {
-		false
-	}
+    return try {
+        if (Files.exists(this))
+            Files.walk(this, FileVisitOption.FOLLOW_LINKS)
+                .toList()
+                .sorted()
+                .reversed()
+                .forEach { Files.delete(it) }
+        true
+    } catch (e: IOException) {
+        false
+    }
 }
 
 fun Path.withExtension(extension: String): Path {
-	require(!Files.isDirectory(this))
-	return this.resolveSibling(File(this.fileName.toString()).nameWithoutExtension + "." + extension)
+    require(!Files.isDirectory(this))
+    return this.resolveSibling(File(this.fileName.toString()).nameWithoutExtension + "." + extension)
 }
 
 fun FileSystem.dir(dirName: String): Path {
-	val dir = this.getPath(dirName)
-	Files.createDirectories(dir)
-	return dir
+    val dir = this.getPath(dirName)
+    Files.createDirectories(dir)
+    return dir
 }

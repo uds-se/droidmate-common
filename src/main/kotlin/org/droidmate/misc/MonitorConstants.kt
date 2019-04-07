@@ -28,56 +28,56 @@ package org.droidmate.misc
 import java.util.Locale
 
 class MonitorConstants {
-	companion object {
+    companion object {
 
-		@JvmStatic
-		val tag_api = "Monitor_API_method_call"
+        @JvmStatic
+        val tag_api = "Monitor_API_method_call"
 
-		@JvmStatic
-		val tag_prefix = "droidmate/monit/"
-		@JvmStatic
-		val tag_srv = tag_prefix + "server"
-		@JvmStatic
-		val tag_run = tag_prefix + "srv_run"
-		// mjt == MonitorJavaTemplate
-		@JvmStatic
-		val tag_mjt = tag_prefix + "mjt"
+        @JvmStatic
+        val tag_prefix = "droidmate/monit/"
+        @JvmStatic
+        val tag_srv = tag_prefix + "server"
+        @JvmStatic
+        val tag_run = tag_prefix + "srv_run"
+        // mjt == MonitorJavaTemplate
+        @JvmStatic
+        val tag_mjt = tag_prefix + "mjt"
 
-		@JvmStatic
-		val loglevel = "i"
-		@JvmStatic
-		val msg_ctor_start = "ctor(): entering"
-		@JvmStatic
-		val msg_ctor_success = "ctor(): startMonitorTCPServer(): SUCCESS port: "
-		@JvmStatic
-		val msg_ctor_failure = "! ctor(): startMonitorTCPServer(): FAILURE"
+        @JvmStatic
+        val loglevel = "i"
+        @JvmStatic
+        val msg_ctor_start = "ctor(): entering"
+        @JvmStatic
+        val msg_ctor_success = "ctor(): startMonitorTCPServer(): SUCCESS port: "
+        @JvmStatic
+        val msg_ctor_failure = "! ctor(): startMonitorTCPServer(): FAILURE"
 
-		/**
-		 * <p>
-		 * Example full message:
-		 * </p><p>
-		 * {@code Monitor initialized for package org.droidmate.fixtures.apks.monitored}
-		 * </p>
-		 */
-		@JvmStatic
-		val msgPrefix_init_success = "init(): SUCCESS for package "
-		@JvmStatic
-		val srvCmd_connCheck = "connCheck"
-		@JvmStatic
-		val srvCmd_get_logs = "getLogs"
-		@JvmStatic
-		val srvCmd_get_statements = "getStatements"
-		@JvmStatic
-		val srvCmd_get_time = "getTime"
-		@JvmStatic
-		val srvCmd_close = "close"
+        /**
+         * <p>
+         * Example full message:
+         * </p><p>
+         * {@code Monitor initialized for package org.droidmate.fixtures.apks.monitored}
+         * </p>
+         */
+        @JvmStatic
+        val msgPrefix_init_success = "init(): SUCCESS for package "
+        @JvmStatic
+        val srvCmd_connCheck = "connCheck"
+        @JvmStatic
+        val srvCmd_get_logs = "getLogs"
+        @JvmStatic
+        val srvCmd_get_statements = "getStatements"
+        @JvmStatic
+        val srvCmd_get_time = "getTime"
+        @JvmStatic
+        val srvCmd_close = "close"
 
-		@JvmStatic
-		val monitor_time_formatter_pattern = "yyyy-MM-dd HH:mm:ss.SSS"
-		// !!! DUPLICATION WARNING !!! with org.droidmate.buildsrc.locale
-		// EnvironmentConstants.getLocale() is not used here as monitor_time_formatter_locale is used in android device.
-		//public static final Locale monitor_time_formatter_locale  = EnvironmentConstants.getLocale();
-		@JvmStatic
-		val monitor_time_formatter_locale: Locale = Locale.US
-	}
+        @JvmStatic
+        val monitor_time_formatter_pattern = "yyyy-MM-dd HH:mm:ss.SSS"
+        // !!! DUPLICATION WARNING !!! with org.droidmate.buildsrc.locale
+        // EnvironmentConstants.getLocale() is not used here as monitor_time_formatter_locale is used in android device.
+        // public static final Locale monitor_time_formatter_locale  = EnvironmentConstants.getLocale();
+        @JvmStatic
+        val monitor_time_formatter_locale: Locale = Locale.US
+    }
 }

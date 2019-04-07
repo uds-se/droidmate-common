@@ -29,8 +29,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 class Dex constructor(val path: Path) {
-	init {
-		assert(Files.isRegularFile(path))
-		assert(path.fileName.toString().endsWith(".dex"))
-	}
+    init {
+        assert(Files.isRegularFile(path))
+        assert(path.fileName.toString().endsWith(".dex"))
+    }
 }

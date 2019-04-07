@@ -29,38 +29,41 @@ import java.nio.file.Files
 
 import java.nio.file.Path
 
-class JarsignerWrapper(private val sysCmdExecutor: ISysCmdExecutor,
-                       private val jarsignerPath: Path,
-                       private val debugKeystore: Path) : IJarsignerWrapper {
-	init {
-		assert(Files.isRegularFile(this.jarsignerPath))
-		assert(Files.isRegularFile(this.debugKeystore))
-	}
+class JarsignerWrapper(
+    private val sysCmdExecutor: ISysCmdExecutor,
+    private val jarsignerPath: Path,
+    private val debugKeystore: Path
+) : IJarsignerWrapper {
+    init {
+        assert(Files.isRegularFile(this.jarsignerPath))
+        assert(Files.isRegularFile(this.debugKeystore))
+    }
 
-	@SuppressWarnings("SpellCheckingInspection")
-	@Throws(DroidmateException::class)
-	override fun signWithDebugKey(apk: Path): Path {
-		val commandDescription = "Executing jarsigner to sign apk ${apk.toRealPath()}"
+    @SuppressWarnings("SpellCheckingInspection")
+    @Throws(DroidmateException::class)
+    override fun signWithDebugKey(apk: Path): Path {
+        val commandDescription = "Executing jarsigner to sign apk ${apk.toRealPath()}"
 
-		try {
+        try {
 
-			// this command is based on:
-			// http://developer.android.com/tools/publishing/app-signing.html#debugmode
-			// http://developer.android.com/tools/publishing/app-signing.html#signapp
-			sysCmdExecutor.execute(commandDescription, jarsignerPath.toRealPath().toString(),
-					"-sigalg", "SHA1withRSA",
-					"-digestalg", "SHA1",
-					"-storepass", "android",
-					"-keypass", "android",
-					"-keystore", debugKeystore.toRealPath().toString(),
-					apk.toRealPath().toString(),
-					"androiddebugkey")
+            // this command is based on:
+            // http://developer.android.com/tools/publishing/app-signing.html#debugmode
+            // http://developer.android.com/tools/publishing/app-signing.html#signapp
+            sysCmdExecutor.execute(
+                commandDescription, jarsignerPath.toRealPath().toString(),
+                "-sigalg", "SHA1withRSA",
+                "-digestalg", "SHA1",
+                "-storepass", "android",
+                "-keypass", "android",
+                "-keystore", debugKeystore.toRealPath().toString(),
+                apk.toRealPath().toString(),
+                "androiddebugkey"
+            )
+        } catch (e: SysCmdExecutorException) {
+            throw DroidmateException(e)
+        }
 
-		} catch (e: SysCmdExecutorException) {
-			throw DroidmateException(e)
-		}
-
-		assert(Files.isRegularFile(apk))
-		return apk
-	}
+        assert(Files.isRegularFile(apk))
+        return apk
+    }
 }

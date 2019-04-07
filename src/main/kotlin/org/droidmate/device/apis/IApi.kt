@@ -32,25 +32,25 @@ package org.droidmate.device.apis
  */
 
 interface IApi {
-	val objectClass: String
+    val objectClass: String
 
-	val methodName: String
+    val methodName: String
 
-	val returnClass: String
+    val returnClass: String
 
-	val paramTypes: List<String>
+    val paramTypes: List<String>
 
-	val paramValues: List<String>
+    val paramValues: List<String>
 
-	val threadId: String
+    val threadId: String
 
-	val stackTrace: String
+    val stackTrace: String
 
-	fun getStackTraceFrames(): List<String>
+    fun getStackTraceFrames(): List<String>
 
-	val uniqueString: String
+    val uniqueString: String
 
-	fun getIntents(): List<String>
+    fun getIntents(): List<String>
 
-	fun parseUri(): String
+    fun parseUri(): String
 }
