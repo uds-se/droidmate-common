@@ -25,7 +25,9 @@
 
 package org.droidmate.misc
 
-/*import java.nio.file.Path
+import org.droidmate.legacy.Resource
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * Extracts a file in 'out/EnvironmentConstants.dir_name_temp_extracted_resources'.
@@ -33,13 +35,12 @@ package org.droidmate.misc
  * This should only be used for tests.
  */
 val Resource.extractedText: String
-	get() {
-		val resDir = Paths.get("out", EnvironmentConstants.dir_name_temp_extracted_resources)
-		val extractedFile = this.extractTo(resDir).toAbsolutePath()
-		return extractedFile.text
-	}
+    get() {
+        val resDir = Paths.get("out", EnvironmentConstants.dir_name_temp_extracted_resources)
+        val extractedFile = this.extractTo(resDir).toAbsolutePath()
+        return extractedFile.text
+    }
 
 fun Resource.getTextFromExtractedResource(resourceDir: Path): String {
-	return this.extractTo(resourceDir).text
+    return this.extractTo(resourceDir).text
 }
-*/
