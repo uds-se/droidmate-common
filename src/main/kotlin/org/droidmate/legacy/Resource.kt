@@ -94,7 +94,7 @@ class Resource @JvmOverloads constructor(val name: String, val allowAmbiguity: B
         return targetPath
     }
 
-    fun<T> withExtractedPath(block: (Path) -> T): T {
+    fun <T> withExtractedPath(block: (Path) -> T): T {
 
         return if (url.protocol == "file")
             block(Paths.get(url.toURI()))
