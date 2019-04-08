@@ -27,7 +27,6 @@ package org.droidmate.legacy
 
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.streams.toList
 
 class FileSystemsOperations {
     companion object {
@@ -60,47 +59,51 @@ class FileSystemsOperations {
                 )
             )
         }
-    }
 
-    fun copyDirRecursivelyToDirInDifferentFileSystem(dir: Path, dest: Path) {
-        assert(Files.isDirectory(dir))
-        assert(Files.isDirectory(dest))
-        assert(dir.fileSystem != dest.fileSystem)
-        assert(dir.parent != null)
+        @JvmStatic
+        fun copyDirRecursivelyToDirInDifferentFileSystem(dir: Path, dest: Path) {
+            assert(Files.isDirectory(dir))
+            assert(Files.isDirectory(dest))
+            assert(dir.fileSystem != dest.fileSystem)
+            assert(dir.parent != null)
 
-        Files.walk(dir)
-            .forEach { copyPath(it, dir.parent, dest) }
-    }
-
-    fun copyDirContentsRecursivelyToDirInDifferentFileSystem(dir: Path, dest: Path) {
-        assert(Files.isDirectory(dir))
-        assert(Files.isDirectory(dest))
-        assert(dir.fileSystem != dest.fileSystem)
-
-        Files.walk(dir)
-            .forEach { copyPath(it, dir, dest) }
-    }
-
-    fun copyFilesToDirInDifferentFileSystem(files: List<Path>, dest: Path) {
-        assert(Files.isDirectory(dest))
-        files.forEach {
-            assert(Files.isRegularFile(it))
-            assert(it.parent != null)
-            assert(Files.isDirectory(it.parent))
-            assert(it.fileSystem != dest.fileSystem)
+            Files.walk(dir)
+                .forEach { copyPath(it, dir.parent, dest) }
         }
 
-        files.forEach {
-            copyPath(it, it.parent, dest)
+        @JvmStatic
+        fun copyDirContentsRecursivelyToDirInDifferentFileSystem(dir: Path, dest: Path) {
+            assert(Files.isDirectory(dir))
+            assert(Files.isDirectory(dest))
+            assert(dir.fileSystem != dest.fileSystem)
+
+            Files.walk(dir)
+                .forEach { copyPath(it, dir, dest) }
         }
-    }
 
-    fun copyDirContentsRecursivelyToDirInSameFileSystem(dir: Path, dest: Path) {
-        assert(Files.isDirectory(dir))
-        assert(Files.isDirectory(dest))
-        assert(dir.fileSystem == dest.fileSystem)
+        @JvmStatic
+        fun copyFilesToDirInDifferentFileSystem(files: List<Path>, dest: Path) {
+            assert(Files.isDirectory(dest))
+            files.forEach {
+                assert(Files.isRegularFile(it))
+                assert(it.parent != null)
+                assert(Files.isDirectory(it.parent))
+                assert(it.fileSystem != dest.fileSystem)
+            }
 
-        Files.walk(dir).toList()
-            .forEach { copyPath(it, dir, dest) }
+            files.forEach {
+                copyPath(it, it.parent, dest)
+            }
+        }
+
+        @JvmStatic
+        fun copyDirContentsRecursivelyToDirInSameFileSystem(dir: Path, dest: Path) {
+            assert(Files.isDirectory(dir))
+            assert(Files.isDirectory(dest))
+            assert(dir.fileSystem == dest.fileSystem)
+
+            Files.walk(dir)
+                .forEach { copyPath(it, dir, dest) }
+        }
     }
 }

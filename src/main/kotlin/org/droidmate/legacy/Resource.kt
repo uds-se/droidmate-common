@@ -26,17 +26,18 @@
 package org.droidmate.legacy
 
 import java.io.IOException
+import java.lang.IllegalStateException
 import java.net.JarURLConnection
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import java.nio.file.attribute.PosixFilePermissions
 
-class Resource @JvmOverloads constructor(val name: String, val allowAmbiguity: Boolean = false) {
+class Resource @JvmOverloads constructor(private val name: String, private val allowAmbiguity: Boolean = false) {
 
-    val urls: List<URL> = {
-
+    private val url: URL by lazy {
         val urls = ClassLoader.getSystemResources(name).toList()
 
         if (urls.isEmpty())
@@ -45,31 +46,29 @@ class Resource @JvmOverloads constructor(val name: String, val allowAmbiguity: B
         if (!allowAmbiguity && urls.size > 1)
             throw IOException(
                 "More than one resource URL found for path $name. " +
-                        "The found URLs:\n${urls.joinToString(separator = "\n")}"
+                        "The found URLs:\n${urls.joinToString(separator = System.lineSeparator())}"
             )
 
-        urls
-    }()
+        urls.first()
+    }
 
     val text: String by lazy {
         url.text
     }
 
-    val url: URL by lazy {
-        check(!allowAmbiguity) { "check failed: !allowAmbiguity" }
-        urls.single()
-    }
+    private fun URL.isJar() = this.protocol == "jar"
+
+    private fun URL.isFile() = this.protocol == "file"
 
     val path: Path by lazy {
         when {
-            url.protocol == "jar" -> {
+            url.isJar() -> {
                 val connection = url.openConnection() as JarURLConnection
                 Paths.get(connection.jarFileURL.toURI())
             }
-            url.protocol == "file" -> Paths.get(urls.single().toURI())
-            else -> error(
-                "cannot get path on a resource whose protocol is not 'file'. " +
-                        "The protocol is instead '${urls.single().protocol}'"
+            url.isFile() -> Paths.get(url.toURI())
+            else -> throw IllegalStateException("Cannot get path on a resource whose protocol is not 'file'. " +
+                    "The protocol is instead '${url.protocol}'"
             )
         }
     }
@@ -79,28 +78,12 @@ class Resource @JvmOverloads constructor(val name: String, val allowAmbiguity: B
         Paths.get(url.toURI())
     }
 
-    private fun copyBesideContainer(url: URL): Path {
-
-        val jarUrlConnection = url.openConnection() as JarURLConnection
-        val jarFile = Paths.get(jarUrlConnection.jarFileURL.toURI())
-        // Example jarFile: C:\my\local\repos\github\utilities\build\resources\test\topLevel.jar
-        val jarDir = jarFile.parent
-        // Example jarDir: C:\my\local\repos\github\utilities\build\resources\test
-        val jarEntry = jarUrlConnection.jarEntry.toString()
-        // Example jarEntry: nested.jar
-        val targetPath = jarDir.resolve(jarEntry)
-        // Example targetPath: C:\my\local\repos\github\utilities\build\resources\test\nested.jar
-        Files.copy(url.openStream(), targetPath)
-        return targetPath
-    }
-
     fun <T> withExtractedPath(block: (Path) -> T): T {
-
-        return if (url.protocol == "file")
+        return if (url.isFile()) {
             block(Paths.get(url.toURI()))
-        else {
-            val extractedPath = copyBesideContainer(url)
-
+        } else {
+            val tmpDir = Files.createTempDirectory(name.removeSuffix("/"))
+            val extractedPath = extractTo(tmpDir)
             try {
                 check(extractedPath.isRegularFile) {
                     ("Failure: extracted path $extractedPath has been deleted while being processed in the " +
@@ -113,24 +96,54 @@ class Resource @JvmOverloads constructor(val name: String, val allowAmbiguity: B
         }
     }
 
-    @JvmOverloads
-    fun extractTo(targetDir: Path, asDirectory: Boolean = false): Path {
-        val targetFile = if (url.protocol == "file") {
-            targetDir.resolve(name)
+    private fun extractFolderFromJar(): Path {
+        val tmpDir = Files.createTempDirectory(name.removeSuffix("/"))
+        val jarUrlConnection = url.openConnection() as JarURLConnection
+        val jar = jarUrlConnection.jarFile
+        jar.entries()
+            .asSequence()
+            .filter { it.name.startsWith(name) }
+            .forEach { entry ->
+                val file = tmpDir.resolve(entry.name)
+                if (entry.isDirectory) { // if its a directory, create it
+                    Files.createDirectories(file)
+                } else {
+                    val inputStream = jar.getInputStream(entry) // get the input stream
+                    Files.write(file, inputStream.readBytes())
+                    Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rwxr--r--"))
+                }
+            }
+        jar.close()
+
+        return tmpDir.resolve(name)
+    }
+
+    fun extractTo(targetDir: Path): Path {
+        val targetFile = targetDir.resolve(name)
+
+        if (url.isFile()) {
+            if (Files.isDirectory(path)) {
+                Files.createDirectories(targetFile)
+                FileSystemsOperations.copyDirContentsRecursivelyToDirInSameFileSystem(path, targetFile)
+            } else {
+                Files.createDirectories(targetFile.parent)
+                Files.deleteIfExists(targetFile)
+                Files.copy(url.openStream(), targetFile, StandardCopyOption.REPLACE_EXISTING)
+            }
         } else {
             val jarUrlConnection = url.openConnection() as JarURLConnection
-            targetDir.resolve(jarUrlConnection.jarEntry.toString())
-        }
+            val jarEntry = jarUrlConnection.jarEntry
 
-        if (asDirectory) {
-            targetFile.mkdirs()
-            if (Files.exists(targetFile))
-                Files.delete(targetFile)
-            Files.createDirectory(targetFile)
-            FileSystemsOperations().copyDirContentsRecursivelyToDirInSameFileSystem(Paths.get(url.toURI()), targetFile)
-        } else {
-            targetFile.mkdirs()
-            Files.copy(url.openStream(), targetFile, StandardCopyOption.REPLACE_EXISTING)
+            if (jarEntry.isDirectory) {
+                val tmpDir = extractFolderFromJar()
+                Files.createDirectories(targetFile)
+                FileSystemsOperations.copyDirContentsRecursivelyToDirInSameFileSystem(tmpDir, targetFile)
+                tmpDir.deleteDirectoryRecursively()
+            } else {
+                Files.createDirectories(targetFile.parent)
+                Files.deleteIfExists(targetFile)
+                Files.copy(url.openStream(), targetFile, StandardCopyOption.REPLACE_EXISTING)
+            }
         }
 
         return targetFile
