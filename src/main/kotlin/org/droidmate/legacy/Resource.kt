@@ -94,21 +94,22 @@ class Resource @JvmOverloads constructor(val name: String, val allowAmbiguity: B
         return targetPath
     }
 
-    fun withExtractedPath(block: Path.() -> Unit) {
+    fun<T> withExtractedPath(block: (Path) -> T): T {
 
-        if (url.protocol == "file")
-            Paths.get(url.toURI()).block()
+        return if (url.protocol == "file")
+            block(Paths.get(url.toURI()))
         else {
-
             val extractedPath = copyBesideContainer(url)
 
-            extractedPath.block()
-
-            check(
-                extractedPath.isRegularFile
-            ) { ("Failure: extracted path $extractedPath has been deleted while being processed in the 'withExtractedPath' block.") }
-
-            Files.delete(extractedPath)
+            try {
+                check(extractedPath.isRegularFile) {
+                    ("Failure: extracted path $extractedPath has been deleted while being processed in the " +
+                            "'withExtractedPath' block.")
+                }
+                block(extractedPath)
+            } finally {
+                Files.delete(extractedPath)
+            }
         }
     }
 
