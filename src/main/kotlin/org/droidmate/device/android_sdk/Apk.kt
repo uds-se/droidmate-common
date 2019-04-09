@@ -23,11 +23,9 @@
 //
 // web: www.droidmate.org
 
-package org.droidmate.misc
+package org.droidmate.device.android_sdk
 
 import org.apache.commons.io.FilenameUtils
-import org.droidmate.device.android_sdk.AaptWrapper
-import org.droidmate.device.android_sdk.LaunchableActivityNameProblemException
 import org.droidmate.logging.Markers
 import org.slf4j.LoggerFactory
 import java.net.URI
@@ -46,7 +44,11 @@ class Apk constructor(
         private val log by lazy { LoggerFactory.getLogger(Apk::class.java) }
 
         private const val dummyVal = "DUMMY"
-        private val dummyApk = Apk(Paths.get("./dummy.apk"), dummyVal, dummyVal)
+        private val dummyApk = Apk(
+            Paths.get("./dummy.apk"),
+            dummyVal,
+            dummyVal
+        )
 
         @JvmStatic
         fun fromFile(path: Path): Apk {
@@ -102,7 +104,7 @@ class Apk constructor(
         get() = this.fileName.endsWith("-instrumented.apk")
 
     override val isDummy: Boolean
-        get() = this.packageName == Apk.dummyVal
+        get() = this.packageName == dummyVal
 
     override fun toString(): String = this.fileName
 }

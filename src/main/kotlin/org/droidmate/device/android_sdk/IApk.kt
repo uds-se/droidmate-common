@@ -23,7 +23,7 @@
 //
 // web: www.droidmate.org
 
-package org.droidmate.misc
+package org.droidmate.device.android_sdk
 
 import java.io.Serializable
 import java.nio.file.Path
