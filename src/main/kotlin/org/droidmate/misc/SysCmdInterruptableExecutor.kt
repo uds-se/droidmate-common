@@ -113,48 +113,42 @@ class SysCmdInterruptableExecutor : ISysCmdExecutor {
         log.trace("Timeout: {} ms", timeout)
         log.trace("Command:")
         log.trace(commandLine)
-        log.info(Markers.osCmd, commandLine)
+        log.debug(Markers.osCmd, commandLine)
 
         val executionTimeStopwatch = Stopwatch.createStarted()
 
-        var exitValue: Int
-        try {
-            exitValue = executor.execute(command)
-        } catch (e: ExecuteException) {
-            exitValue = e.getExitValue()
+        val exitValue = try {
+            executor.execute(command)
+        } catch (e: IOException) {
+            val exitValue = if (e is ExecuteException)
+                e.exitValue
+            else
+                -1
             // If exitValue==143 on Unix or 1 on Windows, then the SIGTERM signal was sent and this process was forced to finish, so don't
             // throw an exception.
             if ((exitValue != 143 && !OS.isWindows) || (exitValue != 1 && OS.isWindows)) {
+                val executionTimeMsg = getExecutionTimeMsg(executionTimeStopwatch, timeout, exitValue, commandDescription)
+                val stdOut = if (processStdoutStream.toString().isNotEmpty())
+                    processStdoutStream.toString()
+                else
+                    "<stdout is empty>"
+                val stdErr = if (processStderrStream.toString().isNotEmpty())
+                    processStderrStream.toString()
+                else
+                    "<stderr is empty>"
+
                 throw SysCmdExecutorException(
-                    String.format(
-                        "Failed to execute a system command.\n" +
-                                "Command: %s\n" +
-                                "Captured exit value: %d\n" +
-                                "Execution time: %s\n" +
-                                "Captured stdout: %s\n" +
-                                "Captured stderr: %s",
-                        command.toString(),
-                        e.exitValue,
-                        getExecutionTimeMsg(executionTimeStopwatch, timeout, e.getExitValue(), commandDescription),
-                        if (processStdoutStream.toString().isNotEmpty()) processStdoutStream.toString() else "<stdout is empty>",
-                        if (processStderrStream.toString().isNotEmpty()) processStderrStream.toString() else "<stderr is empty>"
-                    ),
+                    "Failed to execute a system command.\n" +
+                            "Command: $command\n" +
+                            "Captured exit value: $exitValue\n" +
+                            "Execution time: $executionTimeMsg\n" +
+                            "Captured stdout: $stdOut\n" +
+                            "Captured stderr: $stdErr",
                     e
                 )
+            } else {
+                exitValue
             }
-        } catch (e: IOException) {
-            throw SysCmdExecutorException(
-                String.format(
-                    "Failed to execute a system command.\n" +
-                            "Command: %s\n" +
-                            "Captured stdout: %s\n" +
-                            "Captured stderr: %s",
-                    command.toString(),
-                    if (processStdoutStream.toString().isNotEmpty()) processStdoutStream.toString() else "<stdout is empty>",
-                    if (processStderrStream.toString().isNotEmpty()) processStderrStream.toString() else "<stderr is empty>"
-                ),
-                e
-            )
         } finally {
             currentWatchdog = null
             log.trace("Captured stdout:")

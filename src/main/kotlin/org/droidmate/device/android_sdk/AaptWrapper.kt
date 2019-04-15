@@ -115,9 +115,9 @@ class AaptWrapper @JvmOverloads constructor(
         return arrayListOf(getPackageName(apk), applicationLabel)
     }
 
+    @Throws(DroidmateException::class)
     private fun aaptDumpBadging(instrumentedApk: Path): String {
-        val commandDescription = "Executing aapt (Android Asset Packaging Tool) to extract package name of " +
-                "apk \"${instrumentedApk.toAbsolutePath()}\"."
+        val commandDescription = "Executing aapt to extract package name of $instrumentedApk"
 
         try {
             val outputStreams = sysCmdExecutor.execute(

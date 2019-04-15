@@ -25,10 +25,8 @@
 
 package org.droidmate.device.android_sdk
 
-import org.apache.commons.io.FilenameUtils
 import org.droidmate.logging.Markers
 import org.slf4j.LoggerFactory
-import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -70,41 +68,26 @@ class Apk constructor(
         }
     }
 
-    private val fileURI: URI = internalPath.toUri()
-
-    override val fileName: String
-    override val fileNameWithoutExtension: String
-    override val absolutePath: String
+    override val path: Path = internalPath.toAbsolutePath()
+    override val fileName = path.fileName.toString()
+    override val fileNameWithoutExtension = path.toFile().nameWithoutExtension
     override var launchableMainActivityName: String = ""
 
     init {
-        val fileName = path.fileName.toString()
-        val absolutePath = path.toAbsolutePath().toString()
-
         assert(fileName.isNotEmpty(), fileName::toString)
         assert(fileName.endsWith(".apk"), fileName::toString)
-        assert(absolutePath.isNotEmpty(), absolutePath::toString)
         assert(packageName.isNotEmpty(), packageName::toString)
 
-        this.fileName = fileName
-        this.fileNameWithoutExtension = FilenameUtils.getBaseName(path.fileName.toString())
-        this.absolutePath = absolutePath
-
-        // TODO @Nataniel please check is this true?
-        assert(this.applicationLabel.isNotEmpty())
+        if (this.applicationLabel.isEmpty()) {
+            log.warn("Unable to determine label label for apk $packageName ($fileName)")
+        }
     }
 
-    override val path: Path
-        get() = Paths.get(fileURI)
+    override val inlined: Boolean = this.fileName.endsWith("-inlined.apk")
 
-    override val inlined: Boolean
-        get() = this.fileName.endsWith("-inlined.apk")
+    override val instrumented: Boolean = this.fileName.endsWith("-instrumented.apk")
 
-    override val instrumented: Boolean
-        get() = this.fileName.endsWith("-instrumented.apk")
-
-    override val isDummy: Boolean
-        get() = this.packageName == dummyVal
+    override val isDummy: Boolean = this.packageName == dummyVal
 
     override fun toString(): String = this.fileName
 }

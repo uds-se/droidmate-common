@@ -34,7 +34,6 @@ interface IApk : Serializable {
     val applicationLabel: String
     val fileName: String
     val fileNameWithoutExtension: String
-    val absolutePath: String
 
     val inlined: Boolean
     val instrumented: Boolean
@@ -48,6 +47,9 @@ interface IApk : Serializable {
     var launchableMainActivityName: String
 
     fun updateLaunchableActivityName(newValue: String) {
-        launchableMainActivityName = if (newValue.isBlank()) launchableMainActivityName else newValue
+        launchableMainActivityName = if (newValue.isBlank())
+            launchableMainActivityName
+        else
+            newValue
     }
 }

@@ -27,7 +27,10 @@ package org.droidmate.device.android_sdk
 
 import org.droidmate.misc.DroidmateException
 
-class LaunchableActivityNameProblemException(message: String, val isFatal: Boolean = false) : DroidmateException(message) {
+class LaunchableActivityNameProblemException @JvmOverloads constructor(
+    message: String,
+    val isFatal: Boolean = false
+) : DroidmateException(message) {
     companion object {
         private const val serialVersionUID: Long = 1
     }
