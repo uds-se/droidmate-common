@@ -25,10 +25,6 @@
 
 package org.droidmate.logging
 
-import ch.qos.logback.classic.spi.ILoggingEvent
-import ch.qos.logback.core.filter.AbstractMatcherFilter
-import ch.qos.logback.core.spi.FilterReply
-
 /**
  * <p>
  * Logback filter for matching logged message marker against any of the markers defined in {@link Markers}.
@@ -38,7 +34,7 @@ import ch.qos.logback.core.spi.FilterReply
  *
  * </p>
  */
-class AllDroidmateMarkersFilter : AbstractMatcherFilter<ILoggingEvent>() {
+/*class AllDroidmateMarkersFilter : AbstractMatcherFilter<ILoggingEvent>() {
     override fun decide(event: ILoggingEvent?): FilterReply {
         if (event == null)
             return onMismatch
@@ -54,4 +50,4 @@ class AllDroidmateMarkersFilter : AbstractMatcherFilter<ILoggingEvent>() {
         else
             onMismatch
     }
-}
+}*/
