@@ -33,7 +33,6 @@ import org.apache.commons.exec.ExecuteException
 import org.apache.commons.exec.ExecuteWatchdog
 import org.apache.commons.exec.PumpStreamHandler
 import org.droidmate.legacy.OS
-import org.droidmate.logging.Markers
 import org.droidmate.misc.ISysCmdExecutor.Companion.getExecutionTimeMsg
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
@@ -109,11 +108,7 @@ class SysCmdInterruptableExecutor : ISysCmdExecutor {
         // Only exit value of 0 is allowed for the call to return successfully.
         executor.setExitValue(0)
 
-        log.trace(commandDescription)
-        log.trace("Timeout: {} ms", timeout)
-        log.trace("Command:")
-        log.trace(commandLine)
-        log.debug(Markers.osCmd, commandLine)
+        log.trace("$commandDescription -> $command")
 
         val executionTimeStopwatch = Stopwatch.createStarted()
 
@@ -151,14 +146,11 @@ class SysCmdInterruptableExecutor : ISysCmdExecutor {
             }
         } finally {
             currentWatchdog = null
-            log.trace("Captured stdout:")
-            log.trace(processStdoutStream.toString())
-
-            log.trace("Captured stderr:")
-            log.trace(processStderrStream.toString())
         }
-        log.trace("Captured exit value: $exitValue")
-        log.trace("DONE executing system command")
+
+        if (exitValue != 0) {
+            log.trace("Captured exit value: $exitValue")
+        }
 
         return arrayOf(processStdoutStream.toString(), processStderrStream.toString())
     }
