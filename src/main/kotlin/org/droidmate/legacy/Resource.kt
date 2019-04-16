@@ -110,7 +110,9 @@ class Resource @JvmOverloads constructor(private val name: String, private val a
                 } else {
                     val inputStream = jar.getInputStream(entry) // get the input stream
                     Files.write(file, inputStream.readBytes())
-                    Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rwxr--r--"))
+                    if (!OS.isWindows) {
+                        Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rwxr--r--"))
+                    }
                 }
             }
         jar.close()
