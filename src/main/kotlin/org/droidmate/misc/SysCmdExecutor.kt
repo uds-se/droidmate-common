@@ -99,39 +99,33 @@ class SysCmdExecutor : ISysCmdExecutor {
 
         val exitValue = try {
             executor.execute(command)
-        } catch (e: ExecuteException) {
-            throw SysCmdExecutorException(
-                String.format(
-                    "Failed to execute a system command.\n" +
-                            "Command: %s\n" +
-                            "Captured exit value: %d\n" +
-                            "Execution time: %s\n" +
-                            "Captured stdout: %s\n" +
-                            "Captured stderr: %s",
-                    command.toString(),
-                    e.exitValue,
-                    getExecutionTimeMsg(executionTimeStopwatch, timeout, e.exitValue, commandDescription),
-                    if (processStdoutStream.toString().isNotEmpty()) processStdoutStream.toString() else "<stdout is empty>",
-                    if (processStderrStream.toString().isNotEmpty()) processStderrStream.toString() else "<stderr is empty>"
-                ),
-                e
-            )
         } catch (e: IOException) {
+            val exitCode = if (e is ExecuteException)
+                e.exitValue
+            else
+                -1
+            val stdOut = if (processStdoutStream.toString().isNotEmpty())
+                processStdoutStream.toString()
+            else
+                "<stdout is empty>"
+            val stdErr = if (processStderrStream.toString().isNotEmpty())
+                processStderrStream.toString()
+            else
+                "<stderr is empty>"
+            val execTime = getExecutionTimeMsg(executionTimeStopwatch, timeout, exitCode, commandDescription)
+
             throw SysCmdExecutorException(
-                String.format(
-                    "Failed to execute a system command.\n" +
-                            "Command: %s\n" +
-                            "Captured stdout: %s\n" +
-                            "Captured stderr: %s",
-                    command.toString(),
-                    if (processStdoutStream.toString().isNotEmpty()) processStdoutStream.toString() else "<stdout is empty>",
-                    if (processStderrStream.toString().isNotEmpty()) processStderrStream.toString() else "<stderr is empty>"
-                ),
+                "Failed to execute a system command.\n" +
+                        "Command: $command\n" +
+                        "Captured exit value: $exitCode\n" +
+                        "Execution time: $execTime\n" +
+                        "Captured stdout: $stdOut\n" +
+                        "Captured stderr: $stdErr",
                 e
             )
         }
 
-        if (exitValue > 0) {
+        if (exitValue != 0) {
             log.trace("Captured exit value: $exitValue")
         }
 
