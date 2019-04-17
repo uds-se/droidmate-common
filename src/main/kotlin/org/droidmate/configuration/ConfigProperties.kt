@@ -67,6 +67,7 @@ abstract class ConfigProperties {
         val shuffleApks by booleanType
         val useApkFixturesDir by booleanType
         val deployRawApks by booleanType
+        val installMonitor by booleanType
     }
 
     object DeviceCommunication : PropertyGroup() {
