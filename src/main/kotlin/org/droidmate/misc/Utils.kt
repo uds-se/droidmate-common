@@ -31,6 +31,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.reflect.KClass
+import org.droidmate.deviceInterface.exploration.DeviceResponse
 
 class Utils {
     companion object {
@@ -55,8 +56,8 @@ class Utils {
             while (!succeeded && attemptsLeft > 0) {
                 try {
                     out = target.invoke()
-                    succeeded = true
-                    exception = null
+                    succeeded = (out as? DeviceResponse)?.isSuccessful ?: true
+                    exception = (out as? DeviceResponse)?.throwable
                 } catch (e: Throwable) {
                     if (retryableExceptionClass.java.isAssignableFrom(e.javaClass)) {
 
