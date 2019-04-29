@@ -41,9 +41,8 @@ class Utils {
         @JvmStatic
         @Throws(Throwable::class)
         suspend fun <T> retryOnException(
-            target: () -> T,
-            beforeRetryCommand: () -> Any,
-            retryableExceptionClass: KClass<out DroidmateException>,
+            target: suspend () -> T,
+            beforeRetryCommand: suspend () -> Any,
             attempts: Int,
             internalDelay: Int,
             targetName: String
@@ -80,7 +79,7 @@ class Utils {
 
         @JvmStatic
         @Throws(Throwable::class)
-        suspend fun retryOnFalse(target: () -> Boolean, attempts: Int, internalDelay: Int): Boolean {
+        suspend fun retryOnFalse(target: suspend () -> Boolean, attempts: Int, internalDelay: Int): Boolean {
             assert(attempts > 0)
             var attemptsLeft = attempts
 
@@ -98,7 +97,7 @@ class Utils {
 
         @JvmStatic
         @Throws(Throwable::class)
-        suspend fun <T> retryOnFalse(target: () -> T, validator: (T) -> Boolean, attempts: Int, internalDelay: Int): T {
+        suspend fun <T> retryOnFalse(target: suspend () -> T, validator: (T) -> Boolean, attempts: Int, internalDelay: Int): T {
             assert(attempts > 0)
             var attemptsLeft = attempts
 
