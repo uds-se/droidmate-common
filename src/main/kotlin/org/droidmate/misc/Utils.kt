@@ -25,6 +25,7 @@
 
 package org.droidmate.misc
 
+import kotlinx.coroutines.delay
 import org.apache.commons.lang3.SystemUtils
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -39,12 +40,12 @@ class Utils {
 
         @JvmStatic
         @Throws(Throwable::class)
-        fun <T> retryOnException(
+        suspend fun <T> retryOnException(
             target: () -> T,
             beforeRetryCommand: () -> Any,
             retryableExceptionClass: KClass<out DroidmateException>,
             attempts: Int,
-            delay: Int,
+            internalDelay: Int,
             targetName: String
         ): T {
             assert(attempts > 0)
@@ -64,31 +65,29 @@ class Utils {
                     exception = e
 
                     if (attemptsLeft > 0) {
-                        log.debug("Discarded $e from \"$targetName\". Sleeping for $delay and retrying.")
-                        delay(delay.toLong())
+                        log.debug("Discarded $e from \"$targetName\". Sleeping for $internalDelay and retrying.")
+                        delay(internalDelay.toLong())
                     } else
                         throw e
                 }
             }
 
-            if (succeeded && exception == null) {
-                assert(exception == null)
-                return out!!
-            } else {
-                if(exception !=null) throw exception
-            }
+            return if (exception != null)
+                throw exception
+            else
+                out!!
         }
 
         @JvmStatic
         @Throws(Throwable::class)
-        fun retryOnFalse(target: () -> Boolean, attempts: Int, delay: Int): Boolean {
+        suspend fun retryOnFalse(target: () -> Boolean, attempts: Int, internalDelay: Int): Boolean {
             assert(attempts > 0)
             var attemptsLeft = attempts
 
             var succeeded = target.invoke()
             attemptsLeft--
             while (!succeeded && attemptsLeft > 0) {
-                Thread.sleep(delay.toLong())
+                delay(internalDelay.toLong())
                 succeeded = target.invoke()
                 attemptsLeft--
             }
@@ -99,7 +98,7 @@ class Utils {
 
         @JvmStatic
         @Throws(Throwable::class)
-        fun <T> retryOnFalse(target: () -> T, validator: (T) -> Boolean, attempts: Int, delay: Int): T {
+        suspend fun <T> retryOnFalse(target: () -> T, validator: (T) -> Boolean, attempts: Int, internalDelay: Int): T {
             assert(attempts > 0)
             var attemptsLeft = attempts
 
@@ -107,7 +106,7 @@ class Utils {
             var succeeded = validator.invoke(value)
             attemptsLeft--
             while (!succeeded && attemptsLeft > 0) {
-                Thread.sleep(delay.toLong())
+                delay(internalDelay.toLong())
                 value = target.invoke()
                 succeeded = validator.invoke(value)
                 attemptsLeft--
