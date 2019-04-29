@@ -53,35 +53,29 @@ class Utils {
             var exception: Throwable? = null
             var out: T? = null
 
-            while (!succeeded && attemptsLeft > 0) {
+            while (!succeeded && attemptsLeft-- > 0) {
                 try {
                     out = target.invoke()
                     succeeded = (out as? DeviceResponse)?.isSuccessful ?: true
                     exception = (out as? DeviceResponse)?.throwable
                 } catch (e: Throwable) {
-                    if (retryableExceptionClass.java.isAssignableFrom(e.javaClass)) {
+                    beforeRetryCommand()
 
-                        beforeRetryCommand()
+                    exception = e
 
-                        exception = e
-                        attemptsLeft--
-
-                        if (attemptsLeft > 0) {
-                            log.trace("Discarded $e from \"$targetName\". Sleeping for $delay and retrying.")
-                            Thread.sleep(delay.toLong())
-                        } else
-                            log.trace("Discarded $e from \"$targetName\". Giving up.")
+                    if (attemptsLeft > 0) {
+                        log.debug("Discarded $e from \"$targetName\". Sleeping for $delay and retrying.")
+                        delay(delay.toLong())
                     } else
                         throw e
                 }
             }
 
-            if (succeeded) {
+            if (succeeded && exception == null) {
                 assert(exception == null)
                 return out!!
             } else {
-                assert(exception != null)
-                throw exception!!
+                if(exception !=null) throw exception
             }
         }
 
