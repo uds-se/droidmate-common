@@ -125,7 +125,6 @@ abstract class ConfigProperties {
 
     object Selectors : PropertyGroup() {
         val pressBackProbability by doubleType
-        val widgetIndexes by listType(intType)
         val playbackModelDir by uriType
         val resetEvery by intType
         val actionLimit by intType
