@@ -50,8 +50,8 @@ class TimeFormattedLogcatMessage private constructor(
 
         @JvmStatic
         val assumedDate: LocalDateTime = LocalDateTime.now()
-        private val rawMessageTimeFormatter = DateTimeFormatter.ofPattern("MM-dd HH:mm:ss.SSS")
-        private val withYearMessageTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+        private val rawMessageTimeFormatter = DateTimeFormatter.ofPattern("MM-dd HH:mm:ss.SSSSSS")
+        private val withYearMessageTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
 
         @JvmStatic
         fun from(

@@ -73,7 +73,7 @@ class MonitorConstants {
         val srvCmd_close = "close"
 
         @JvmStatic
-        val monitor_time_formatter_pattern = "yyyy-MM-dd HH:mm:ss.SSS"
+        val monitor_time_formatter_pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS"
         // !!! DUPLICATION WARNING !!! with org.droidmate.buildsrc.locale
         // EnvironmentConstants.getLocale() is not used here as monitor_time_formatter_locale is used in android device.
         // public static final Locale monitor_time_formatter_locale  = EnvironmentConstants.getLocale();
