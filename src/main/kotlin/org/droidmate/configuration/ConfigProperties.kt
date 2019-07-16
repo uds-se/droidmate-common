@@ -40,16 +40,13 @@ abstract class ConfigProperties {
     object Core : PropertyGroup() {
         val logLevel by stringType // TODO we could use a nice enumType instead
         val configPath by uriType
+        val hostIp by stringType
     }
 
     object ApiMonitorServer : PropertyGroup() {
         val monitorSocketTimeout by intType
         val monitorUseLogcat by booleanType
         val basePort by intType
-    }
-
-    object TcpClient : PropertyGroup() {
-        val serverAddress by stringType
     }
 
     object ExecutionMode : PropertyGroup() {
@@ -71,7 +68,6 @@ abstract class ConfigProperties {
     }
 
     object DeviceCommunication : PropertyGroup() {
-        val adbHost by stringType
         val checkAppIsRunningRetryAttempts by intType
         val checkAppIsRunningRetryDelay by intType
         val checkDeviceAvailableAfterRebootAttempts by intType
