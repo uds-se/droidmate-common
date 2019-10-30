@@ -6,14 +6,14 @@ git:
   depth: 1 
   
 jdk:
-  # Most of DroidMate is compiled with Java 8.
-  - oraclejdk8
+  # Most of DroidMate is compiled with Java 11.
+  - oraclejdk11
 
 env:
   global:
 
     # Required to obtain reference to jarsigner.
-    - JAVA_HOME=/usr/lib/jvm/java-8-oracle
+    - JAVA_HOME=/usr/lib/jvm/java-11-oracle
 
 before_install:
 
