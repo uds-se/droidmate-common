@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'org.droidmate'
-version = "1.4.2-SNAPSHOT"
+version = "1.4.3-SNAPSHOT"
 
 apply from: file("${rootProject.projectDir}/ktlint.gradle")
 apply from: file("${rootProject.projectDir}/log.gradle")

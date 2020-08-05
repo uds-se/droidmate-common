@@ -44,6 +44,7 @@ abstract class ConfigProperties {
     }
 
     object ApiMonitorServer : PropertyGroup() {
+        val enable by booleanType
         val monitorSocketTimeout by intType
         val monitorUseLogcat by booleanType
         val basePort by intType
